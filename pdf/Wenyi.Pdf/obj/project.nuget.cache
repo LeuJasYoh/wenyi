@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "mNJh3W3XdcE=",
+  "success": true,
+  "projectFilePath": "D:\\Projects\\wenyi-multi\\pdf\\Wenyi.Pdf\\Wenyi.Pdf.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\23500\\.nuget\\packages\\questpdf\\2025.7.0\\questpdf.2025.7.0.nupkg.sha512"
+  ],
+  "logs": []
+}

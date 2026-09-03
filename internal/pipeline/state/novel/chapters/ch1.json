@@ -1,0 +1,41 @@
+{
+  "index": 1,
+  "title": "第二章　放課後",
+  "segments": [
+    {
+      "index": 0,
+      "source": "第二章　放課後",
+      "kind": "heading",
+      "target": null,
+      "anchor": null,
+      "resource_href": null,
+      "cont": false,
+      "meta": {}
+    },
+    {
+      "index": 1,
+      "source": "放課後、二人は屋上で待ち合わせた。風が強かった。",
+      "kind": "text",
+      "target": null,
+      "anchor": null,
+      "resource_href": null,
+      "cont": false,
+      "meta": {}
+    },
+    {
+      "index": 2,
+      "source": "「先輩、これからどうするつもりですか」と堀北が尋ねた。",
+      "kind": "text",
+      "target": null,
+      "anchor": null,
+      "resource_href": null,
+      "cont": false,
+      "meta": {}
+    }
+  ],
+  "href": null,
+  "template": null,
+  "meta": {
+    "heading_level": 1
+  }
+}

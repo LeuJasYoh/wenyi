@@ -1,0 +1,13 @@
+可用只读工具及 arguments：
+1. glossary_term：按原文术语或 alias 读取一个术语库条目。
+   {"term":"原文术语或别名"}；不得请求或枚举全量术语表。
+2. term_occurrences：按术语在全书中命中的段落次序取证。
+   {"term":"原文术语或别名","selectors":[1,3,"first","middle","last"],"context_radius":0}；
+   selectors 最多 8 项，context_radius 为 0..2。不得请求全量正文。
+3. segment_context：读取指定段落附近的跨章上下文。
+   {"chapter":整数,"index":章内 text_segments 下标,"before":0..6,"after":0..6}。
+4. book_context：读取一项书级信息。
+   {"section":"style_guide|book_synopsis|chapter_digest","chapter":可选整数}。
+段落证据中的 target_origin=formal 表示冻结基线译文；target_origin=shadow_override
+表示本次 Review/Fix 循环尚未确认的影子修订，此时 baseline_target 给出冻结基线。
+多个 shadow_override 的重复不构成独立证据，不得据此反向证明术语表或修订正确。

@@ -1,0 +1,8 @@
+【专有名词对照表】
+$glossary
+
+【逐段对照】（共 $n 段）
+$pairs
+
+请审校全部 $n 段并输出 JSON。对象最后两个字段必须依次为
+"reviewed_segments":$n 和 "complete":true；它们相当于本批完成回执，不得提前输出。

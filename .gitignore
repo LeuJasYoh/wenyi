@@ -1,0 +1,19 @@
+# 构建产物
+dist/
+node/ui-dist/
+
+# 依赖
+node_modules/
+
+# WebUI 运行时工作目录（状态库 / 上传 / 日志）
+webui-run/
+
+# 日志与临时文件
+*.log
+nonexistent-config-test.yaml
+
+# IDE 与系统
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

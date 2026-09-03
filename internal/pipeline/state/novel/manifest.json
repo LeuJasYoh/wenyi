@@ -1,0 +1,25 @@
+{
+  "chapters": [
+    {
+      "href": null,
+      "index": 0,
+      "status": "done",
+      "title": "第一章　出会い",
+      "toc_entry_id": null
+    },
+    {
+      "href": null,
+      "index": 1,
+      "status": "pending",
+      "title": "第二章　放課後",
+      "toc_entry_id": null
+    }
+  ],
+  "fmt": "text",
+  "initialized": true,
+  "meta": {},
+  "source_lang": "ja",
+  "source_path": "C:\\Users\\23500\\AppData\\Local\\Temp\\TestDbgChapterMode893824302\\001\\novel.txt",
+  "target_lang": "zh",
+  "title": "novel"
+}

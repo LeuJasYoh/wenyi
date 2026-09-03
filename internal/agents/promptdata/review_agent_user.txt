@@ -1,0 +1,12 @@
+【当前审校块】
+章节：$chapter
+允许新增问题的局部段号：0 至 $last_index
+$pairs
+
+【当前块 index → 稳定证据 ref】
+$segment_refs_json
+
+【初审候选】
+$candidates_json
+
+请核验全部候选。信息足够时直接输出 final；否则先输出 request_evidence。

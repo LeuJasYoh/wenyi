@@ -1,0 +1,19 @@
+【角色信息 / 风格指南】
+$style
+
+【全书概览】
+$book_synopsis
+
+【本章梗概】
+$chapter_digest
+
+【专有名词对照表】（必须遵守）
+$glossary
+
+【前文译文（最近）】
+$context
+
+【待译$src_label段落】（共 $n 段，编号 0 至 ${n_minus_1}）
+$numbered_source
+
+请翻译以上每一段，输出 JSON：{"translations":[...]}，数组长度必须恰好为 $n。

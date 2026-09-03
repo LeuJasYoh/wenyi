@@ -1,0 +1,10 @@
+【角色信息 / 风格指南】
+$style
+
+【专有名词对照表】
+$glossary
+
+【待润色中文译文】（共 $n 段）
+$numbered_target
+
+输出 JSON：{"polished":[...]}，长度恰为 $n。

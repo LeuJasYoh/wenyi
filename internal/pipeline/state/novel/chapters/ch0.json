@@ -1,0 +1,52 @@
+{
+  "index": 0,
+  "title": "第一章　出会い",
+  "segments": [
+    {
+      "index": 0,
+      "source": "第一章　出会い",
+      "kind": "heading",
+      "target": "润0",
+      "anchor": null,
+      "resource_href": null,
+      "cont": false,
+      "meta": {}
+    },
+    {
+      "index": 1,
+      "source": "綾小路は教室の窓際に座っていた。空はどこまでも青く、遠くで鳥が鳴いていた。",
+      "kind": "text",
+      "target": "润1",
+      "anchor": null,
+      "resource_href": null,
+      "cont": false,
+      "meta": {}
+    },
+    {
+      "index": 2,
+      "source": "「おはよう、綾小路くん」と堀北が声をかけた。彼女はいつも通り無表情だった。",
+      "kind": "text",
+      "target": "润2",
+      "anchor": null,
+      "resource_href": null,
+      "cont": false,
+      "meta": {}
+    },
+    {
+      "index": 3,
+      "source": "綾小路は小さく頷いた。何も言わなかった。",
+      "kind": "text",
+      "target": "润3",
+      "anchor": null,
+      "resource_href": null,
+      "cont": false,
+      "meta": {}
+    }
+  ],
+  "href": null,
+  "template": null,
+  "meta": {
+    "backtranslation_issues": null,
+    "heading_level": 1
+  }
+}

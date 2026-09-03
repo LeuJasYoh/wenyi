@@ -1,0 +1,23 @@
+{"event":"analysis_saved", "has_analysis":true, "ts":"2026-08-24T10:03:31+08:00"}
+{"chapters":2, "config":{"backtranslate_sample":0, "book_understanding":false, "consistency_qa":false, "polish":true, "review":false, "review_concurrency":4, "review_output_retries":2}, "event":"run_initialized", "fmt":"text", "input_path":"C:\\Users\\23500\\AppData\\Local\\Temp\\TestDbgChapterMode893824302\\001\\novel.txt", "run_dir":"state\\novel", "source_lang":"ja", "target_lang":"zh", "title":"novel", "ts":"2026-08-24T10:03:31+08:00"}
+{"event":"book_understanding_skipped", "reason":"disabled", "ts":"2026-08-24T10:03:31+08:00"}
+{"chapters":[0], "event":"translate_run_started", "only_chapter":0, "total_segments":4, "ts":"2026-08-24T10:03:31+08:00"}
+{"backtranslate_sample_count":0, "chapter":0, "count":4, "event":"batch_translated", "polished":true, "punctuation_normalized":true, "segments":[{"index":0,"source":"第一章　出会い","target":"润0"},{"index":1,"source":"綾小路は教室の窓際に座っていた。空はどこまでも青く、遠くで鳥が鳴いていた。","target":"润1"},{"index":2,"source":"「おはよう、綾小路くん」と堀北が声をかけた。彼女はいつも通り無表情だった。","target":"润2"},{"index":3,"source":"綾小路は小さく頷いた。何も言わなかった。","target":"润3"}], "start_index":0, "ts":"2026-08-24T10:03:31+08:00"}
+{"chapter":0, "count":4, "event":"batch_glossary_extracted", "start_index":0, "summary":{"conflict":0,"history_aligned":0,"history_matched":0,"history_unresolved":0,"inserted":1,"unchanged":0}, "ts":"2026-08-24T10:03:31+08:00"}
+{"chapter":0, "event":"chapter_glossary_extracted", "summary":{"conflict":0,"history_aligned":0,"history_matched":1,"history_unresolved":1,"inserted":0,"unchanged":0}, "ts":"2026-08-24T10:03:31+08:00"}
+{"backtranslation_issue_count":0, "chapter":0, "event":"chapter_done", "segment_count":4, "title":"第一章　出会い", "ts":"2026-08-24T10:03:31+08:00"}
+{"event":"translate_run_finished", "total_segments":4, "ts":"2026-08-24T10:03:31+08:00"}
+{"event":"run_resumed", "input_path":"C:\\Users\\23500\\AppData\\Local\\Temp\\TestDbgChapterMode2356665132\\001\\novel.txt", "run_dir":"state\\novel", "ts":"2026-08-24T10:03:36+08:00"}
+{"event":"book_understanding_skipped", "reason":"disabled", "ts":"2026-08-24T10:03:36+08:00"}
+{"chapters":[0], "event":"translate_run_started", "only_chapter":0, "total_segments":4, "ts":"2026-08-24T10:03:36+08:00"}
+{"chapter":0, "count":4, "event":"batch_skipped", "glossary_extraction":{"conflict":0,"inserted":0,"skipped":1,"unchanged":0}, "reason":"already_translated", "segments":[{"index":0,"source":"第一章　出会い","target":"润0"},{"index":1,"source":"綾小路は教室の窓際に座っていた。空はどこまでも青く、遠くで鳥が鳴いていた。","target":"润1"},{"index":2,"source":"「おはよう、綾小路くん」と堀北が声をかけた。彼女はいつも通り無表情だった。","target":"润2"},{"index":3,"source":"綾小路は小さく頷いた。何も言わなかった。","target":"润3"}], "start_index":0, "ts":"2026-08-24T10:03:36+08:00"}
+{"chapter":0, "event":"chapter_glossary_extracted", "summary":{"conflict":0,"history_aligned":0,"history_matched":1,"history_unresolved":1,"inserted":0,"unchanged":0}, "ts":"2026-08-24T10:03:36+08:00"}
+{"backtranslation_issue_count":0, "chapter":0, "event":"chapter_done", "segment_count":4, "title":"第一章　出会い", "ts":"2026-08-24T10:03:36+08:00"}
+{"event":"translate_run_finished", "total_segments":4, "ts":"2026-08-24T10:03:36+08:00"}
+{"event":"run_resumed", "input_path":"C:\\Users\\23500\\AppData\\Local\\Temp\\TestDbgYAMLConfig4151355869\\001\\novel.txt", "run_dir":"state\\novel", "ts":"2026-08-24T10:03:53+08:00"}
+{"event":"book_understanding_skipped", "reason":"disabled", "ts":"2026-08-24T10:03:53+08:00"}
+{"chapters":[0], "event":"translate_run_started", "only_chapter":0, "total_segments":4, "ts":"2026-08-24T10:03:53+08:00"}
+{"chapter":0, "count":4, "event":"batch_skipped", "glossary_extraction":{"conflict":0,"inserted":0,"skipped":1,"unchanged":0}, "reason":"already_translated", "segments":[{"index":0,"source":"第一章　出会い","target":"润0"},{"index":1,"source":"綾小路は教室の窓際に座っていた。空はどこまでも青く、遠くで鳥が鳴いていた。","target":"润1"},{"index":2,"source":"「おはよう、綾小路くん」と堀北が声をかけた。彼女はいつも通り無表情だった。","target":"润2"},{"index":3,"source":"綾小路は小さく頷いた。何も言わなかった。","target":"润3"}], "start_index":0, "ts":"2026-08-24T10:03:53+08:00"}
+{"chapter":0, "event":"chapter_glossary_extracted", "summary":{"conflict":0,"history_aligned":0,"history_matched":1,"history_unresolved":1,"inserted":0,"unchanged":0}, "ts":"2026-08-24T10:03:53+08:00"}
+{"backtranslation_issue_count":0, "chapter":0, "event":"chapter_done", "segment_count":4, "title":"第一章　出会い", "ts":"2026-08-24T10:03:53+08:00"}
+{"event":"translate_run_finished", "total_segments":4, "ts":"2026-08-24T10:03:53+08:00"}

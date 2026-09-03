@@ -1,0 +1,4 @@
+【中文译文】（共 $n 段）
+$numbered_target
+
+输出 JSON：{"backtranslations":[...]}。

@@ -1,0 +1,7 @@
+【专有名词对照表】
+$glossary
+
+【待译标题】（共 $n 条）
+$numbered_titles
+
+输出 JSON：{"titles":[...]}，长度恰为 $n。
