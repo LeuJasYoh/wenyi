@@ -37,7 +37,7 @@ function errReply(reply, statusCode, code, message, extra = {}) {
 export function findEnginePath() {
   const exe = process.env.WENYI_ENGINE;
   if (exe && fs.existsSync(exe)) return exe;
-  const root = path.resolve(import.meta.dirname, "../../..");
+  const root = path.resolve(import.meta.dirname, "../.."); // = node/ 组件根
   const candidates = [
     path.join(root, "..", "dist", "wenyi.exe"),
     path.join(root, "..", "dist", "wenyi"),
@@ -655,7 +655,13 @@ export async function cmdWebServe(argv) {
     return 1;
   }
   const uiDir = path.resolve(import.meta.dirname, "../../ui-dist");
-  const { app } = await buildServer({ stateDir, configPath, port, enginePath, uiDir });
+  // 离线体验模式（provider=fake）需要路由开关才有可用的假翻译行为，按当前配置自动注入
+  let engineEnv = null;
+  try {
+    const cfg = yaml.parse(await fsp.readFile(configPath, "utf8"));
+    if (cfg?.llm?.provider === "fake") engineEnv = { ...process.env, WENYI_FAKE_ROUTING: "1" };
+  } catch { /* 配置缺失或格式错误时按原样运行，由设置页/引擎报错 */ }
+  const { app } = await buildServer({ stateDir, configPath, port, enginePath, uiDir, engineEnv });
   await app.listen({ host: "127.0.0.1", port });
   console.log(`Wenyi WebUI 已启动：http://127.0.0.1:${port}`);
   if (!noOpen && process.env.WENYI_NO_OPEN !== "1") {
