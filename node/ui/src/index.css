@@ -3,11 +3,10 @@
 @tailwind utilities;
 
 @layer base {
-  html { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; }
-  body { @apply antialiased; }
-  ::selection { @apply bg-brand-500/25; }
+  body { @apply bg-paper-100 text-ink-800 antialiased dark:bg-ink-950 dark:text-ink-100; }
+  ::selection { @apply bg-seal-500/20; }
   ::-webkit-scrollbar { width: 8px; height: 8px; }
-  ::-webkit-scrollbar-thumb { @apply rounded-full bg-gray-300 dark:bg-gray-700; }
+  ::-webkit-scrollbar-thumb { @apply rounded-full bg-ink-300/70 dark:bg-ink-700; }
   ::-webkit-scrollbar-track { background: transparent; }
 }
 

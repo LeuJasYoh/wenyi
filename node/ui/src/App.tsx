@@ -1,9 +1,14 @@
-// App.tsx —— WebUI 页面全集（侧边栏布局 + 现代化视觉，分册 10 §7 页面→端点映射）。
+// App.tsx —— WebUI 页面全集（墨色侧栏 + 书卷纸感版面，分册 10 §7 页面→端点映射）。
 import React, { useEffect, useState, useCallback } from "react";
 import { createRoot } from "react-dom/client";
 import { api, subscribeJob, subscribeBook, type BookItem, type Job } from "./api";
 import { Button, Card, SkeletonList, EmptyState, ErrorState, Progress, Badge, Spinner } from "./components";
 import { SettingsForm } from "./config-form";
+import {
+  BookOpen, Book, Plus, Sliders, Search, Upload, FileText, Check, CheckCircle, Play, Stop,
+  ChevronLeft, Sun, Moon, Eye, Shield, Package, BarChart, ListIcon,
+  Command, Menu, Download, AlertTriangle, Bookmark, Activity,
+} from "./icons";
 import "./index.css";
 
 // ---- 主题 ----
@@ -42,51 +47,57 @@ function Dashboard() {
   const translating = books.filter((b) => b.status === "translating").length;
   const done = books.filter((b) => b.status === "done").length;
   return (
-    <div className="space-y-6">
-      {/* 欢迎横幅 */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-600 via-brand-600 to-indigo-700 px-6 py-7 text-white shadow-md">
-        <div className="pointer-events-none absolute -right-8 -top-8 text-[10rem] opacity-10 select-none" aria-hidden>📖</div>
-        <h1 className="text-xl font-semibold">开始你的第一次翻译</h1>
-        <p className="mt-1 max-w-lg text-sm leading-relaxed text-white/80">
+    <div className="space-y-7">
+      {/* 纸面欢迎卡 */}
+      <section className="relative overflow-hidden rounded-xl border border-ink-200/80 bg-paper-50 px-7 py-7 shadow-card dark:border-ink-800 dark:bg-ink-900">
+        <span aria-hidden className="writing-vertical pointer-events-none absolute right-14 top-1/2 hidden h-64 -translate-y-1/2 select-none font-serif text-[40px] leading-none tracking-[.35em] text-ink-200/70 dark:text-ink-800 sm:block">落纸云烟</span>
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-seal-200 bg-seal-50 px-2.5 py-0.5 text-xs text-seal-700 dark:border-seal-500/30 dark:bg-seal-500/10 dark:text-seal-300">
+          <BookOpen size={12} /> 小说翻译工作台
+        </span>
+        <h1 className="mt-3 font-serif text-2xl font-semibold text-ink-900 dark:text-paper-100">开始你的第一次翻译</h1>
+        <p className="mt-1.5 max-w-lg text-sm leading-relaxed text-ink-500 dark:text-ink-300">
           上传一本 EPUB / TXT / HTML / FB2 / PDF 小说，Wenyi 会自动解析章节、维护术语表并分批翻译——中途关闭也不会丢失进度。
         </p>
-        <div className="mt-4 flex flex-wrap gap-2.5">
-          <Button variant="soft" className="!bg-white !text-brand-700 hover:!bg-white/90" onClick={() => nav("/new")}>＋ 新建翻译任务</Button>
-          {meta && !meta.engineAvailable && <span className="self-center text-xs text-white/70">⚠ 引擎不可用，请检查设置</span>}
+        <div className="mt-5 flex flex-wrap items-center gap-3">
+          <Button size="lg" onClick={() => nav("/new")}><Plus size={15} /> 新建翻译任务</Button>
+          {meta && !meta.engineAvailable && (
+            <span className="inline-flex items-center gap-1.5 text-xs text-seal-600 dark:text-seal-300"><AlertTriangle size={13} /> 引擎不可用，请检查设置</span>
+          )}
         </div>
-      </div>
-      {/* 统计条 */}
-      <div className="grid grid-cols-3 gap-3">
-        {[["📚 总书籍", books.length], ["⏳ 翻译中", translating], ["✅ 已完成", done]].map(([label, n]) => (
-          <Card key={String(label)} className="p-4 text-center">
-            <p className="text-2xl font-semibold tabular-nums text-gray-900 dark:text-white">{String(n)}</p>
-            <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{label}</p>
-          </Card>
+        <span aria-hidden className="absolute bottom-5 right-5 flex h-9 w-9 rotate-3 select-none items-center justify-center rounded bg-seal-600 font-serif text-lg text-paper-50 shadow-raised">译</span>
+      </section>
+      {/* 藏书统计（编辑部式一行） */}
+      <div className="flex divide-x divide-ink-200/80 border-y border-ink-200/80 dark:divide-ink-800 dark:border-ink-800">
+        {[["藏书", books.length], ["翻译中", translating], ["已完成", done]].map(([label, n], i) => (
+          <div key={String(label)} className={`flex flex-1 items-baseline gap-2.5 py-3.5 ${i > 0 ? "pl-6" : ""}`} aria-label={String(label)}>
+            <span className="text-[26px] leading-none font-semibold tabular-nums text-ink-800 dark:text-paper-100">{String(n)}</span>
+            <span className="text-xs text-ink-400">{label}</span>
+          </div>
         ))}
       </div>
       {/* 书籍网格 */}
       {books.length === 0 ? (
-        <Card><EmptyState icon="📚" title="书架还是空的" hint="点击上方「新建翻译任务」，上传一本小说开始" action={<Button className="mt-2" onClick={() => nav("/new")}>＋ 新建任务</Button>} /></Card>
+        <Card><EmptyState icon={<Book size={22} />} title="书架还是空的" hint="点击上方「新建翻译任务」，上传一本小说开始" action={<Button className="mt-2" size="sm" onClick={() => nav("/new")}><Plus size={14} /> 新建任务</Button>} /></Card>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {books.map((b) => (
-            <Card key={b.slug} className="group cursor-pointer p-0 transition-all hover:-translate-y-0.5 hover:shadow-md"
+            <Card key={b.slug} className="group cursor-pointer p-0 transition-all hover:-translate-y-0.5 hover:shadow-raised"
               onClick={() => nav(`/book/${b.slug}`)} role="link" tabIndex={0}
               onKeyDown={(e) => { if (e.key === "Enter") nav(`/book/${b.slug}`); }}>
               <div className="flex gap-4 p-4">
-                {/* 书脊装饰 */}
-                <div className={`flex h-20 w-14 shrink-0 items-end justify-center rounded-md pb-2 text-lg shadow-inner ${spineColor(b.slug)}`} aria-hidden>
-                  <span className="writing-vertical text-xs font-bold tracking-widest text-white/90">{(b.title ?? "").slice(0, 6)}</span>
+                {/* 书脊 */}
+                <div className="flex h-20 w-12 shrink-0 items-end justify-center rounded-[3px] pb-2 shadow-inner" style={{ backgroundColor: spineColor(b.slug) }} aria-hidden>
+                  <span className="writing-vertical text-xs font-bold tracking-widest text-white/85">{(b.title ?? "").slice(0, 6)}</span>
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-2">
-                    <h2 className="line-clamp-2 text-sm font-semibold text-gray-900 group-hover:text-brand-600 dark:text-gray-50">{b.title}</h2>
-                    <Badge tone={b.status === "done" ? "green" : b.status === "translating" ? "blue" : "gray"}>
+                    <h2 className="line-clamp-2 font-serif text-[15px] font-semibold leading-snug text-ink-900 group-hover:text-seal-700 dark:text-paper-100 dark:group-hover:text-seal-300">{b.title}</h2>
+                    <Badge tone={b.status === "done" ? "green" : b.status === "translating" ? "brand" : "gray"}>
                       {b.status === "done" ? "已完成" : b.status === "translating" ? "翻译中" : b.status === "prepared" ? "待翻译" : "未初始化"}
                     </Badge>
                   </div>
-                  <div className="mt-2"><Progress done={b.chaptersDone} total={b.chaptersTotal} label={`${b.chaptersDone}/${b.chaptersTotal} 章`} /></div>
-                  <p className="mt-2 text-xs text-gray-400">{b.fmt} · {b.sourceLang}→{b.targetLang}{b.updatedAt && ` · ${timeAgo(b.updatedAt)}`}</p>
+                  <div className="mt-2.5"><Progress done={b.chaptersDone} total={b.chaptersTotal} label={`${b.chaptersDone}/${b.chaptersTotal} 章`} /></div>
+                  <p className="mt-2.5 text-xs text-ink-400">{b.fmt} · {b.sourceLang}→{b.targetLang}{b.updatedAt && ` · ${timeAgo(b.updatedAt)}`}</p>
                 </div>
               </div>
             </Card>
@@ -97,10 +108,11 @@ function Dashboard() {
   );
 }
 
+// 书脊染布色（绀青/赭石/竹青/胭脂/苔色，低饱和，避免刺眼）
+const SPINES = ["#5b6b8c", "#8a5a44", "#5d7a5f", "#9c4f5c", "#6f7049"];
 function spineColor(slug: string): string {
-  const colors = ["bg-gradient-to-b from-rose-400 to-rose-600", "bg-gradient-to-b from-amber-400 to-amber-600", "bg-gradient-to-b from-emerald-400 to-emerald-600", "bg-gradient-to-b from-sky-400 to-sky-600", "bg-gradient-to-b from-violet-400 to-violet-600"];
   let h = 0; for (const c of slug) h = (h * 31 + c.charCodeAt(0)) >>> 0;
-  return colors[h % colors.length];
+  return SPINES[h % SPINES.length];
 }
 
 function timeAgo(iso: string): string {
@@ -140,38 +152,38 @@ function NewTask() {
   return (
     <div className="mx-auto max-w-xl space-y-5">
       <div>
-        <h1 className="text-xl font-semibold">新建翻译任务</h1>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">两步开始：选文件 → 确认启动</p>
+        <h1 className="font-serif text-xl font-semibold text-ink-900 dark:text-paper-100">新建翻译任务</h1>
+        <p className="mt-1 text-sm text-ink-400">两步开始：选文件 → 确认启动</p>
       </div>
       {/* 步骤指示 */}
       <div className="flex items-center gap-2 text-xs">
         {[["1", "选择文件", !!file], ["2", "上传解析", !!uploaded], ["3", "开始翻译", preparing]].map(([n, label, active], i) => (
           <React.Fragment key={String(n)}>
-            {i > 0 && <div className={`h-px flex-1 ${active ? "bg-brand-500" : "bg-gray-200 dark:bg-gray-700"}`} />}
-            <span className={`flex items-center gap-1.5 ${active ? "text-brand-600" : "text-gray-400"}`}>
-              <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold ${active ? "bg-brand-600 text-white" : "bg-gray-200 text-gray-500 dark:bg-gray-700"}`}>{n}</span>{label}
+            {i > 0 && <div className={`h-px flex-1 ${active ? "bg-seal-500" : "bg-ink-200 dark:bg-ink-700"}`} />}
+            <span className={`flex items-center gap-1.5 ${active ? "text-seal-600 dark:text-seal-300" : "text-ink-400"}`}>
+              <span className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold ${active ? "bg-seal-600 text-paper-50" : "bg-ink-200 text-ink-500 dark:bg-ink-700 dark:text-ink-300"}`}>{n}</span>{label}
             </span>
           </React.Fragment>
         ))}
       </div>
       <Card className="p-6">
         <div
-          className={`flex cursor-pointer flex-col items-center gap-3 rounded-xl border-2 border-dashed p-10 text-center transition-colors ${dragOver ? "border-brand-500 bg-brand-50/50" : "border-gray-300 hover:border-brand-400 dark:border-gray-600"}`}
+          className={`flex cursor-pointer flex-col items-center gap-3 rounded-lg border border-dashed p-10 text-center transition-colors ${dragOver ? "border-seal-500 bg-seal-50/50" : "border-ink-300 bg-paper-100/40 hover:border-seal-400 dark:border-ink-600 dark:bg-ink-950/40"}`}
           onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
           onDrop={(e) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files?.[0]; if (f) { setFile(f); setUploaded(null); } }}
           onClick={(e) => (e.currentTarget.querySelector("input") as HTMLInputElement)?.click()}
           role="button" aria-label="选择或拖入文件">
-          <span className="text-4xl" aria-hidden>{file ? "📄" : "⬆️"}</span>
+          <span className="text-seal-600 dark:text-seal-300" aria-hidden>{file ? <FileText size={34} /> : <Upload size={34} />}</span>
           {file ? (
             <div>
-              <p className="text-sm font-medium text-gray-900 dark:text-gray-50">{file.name}</p>
-              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{(file.size / 1024).toFixed(0)} KB · 点击重新选择</p>
+              <p className="text-sm font-medium text-ink-800 dark:text-paper-100">{file.name}</p>
+              <p className="mt-1 text-xs text-ink-400">{(file.size / 1024).toFixed(0)} KB · 点击重新选择</p>
             </div>
           ) : (
             <div>
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-200">拖入文件，或点击选择</p>
-              <p className="mt-1 text-xs text-gray-400">支持 EPUB / TXT / Markdown / HTML / FB2 / PDF，最大 200MB</p>
+              <p className="text-sm font-medium text-ink-700 dark:text-ink-200">拖入文件，或点击选择</p>
+              <p className="mt-1 text-xs text-ink-400">支持 EPUB / TXT / Markdown / HTML / FB2 / PDF，最大 200MB</p>
             </div>
           )}
           <input type="file" className="hidden" accept=".epub,.txt,.md,.html,.fb2,.pdf"
@@ -179,25 +191,29 @@ function NewTask() {
         </div>
         {/* 当前配置摘要 */}
         {cfg && (
-          <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+          <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-ink-400">
             <Badge tone="brand">{langLabel(cfg?.language?.source)} → {langLabel(cfg?.language?.target)}</Badge>
             <Badge>{cfg?.llm?.provider === "fake" ? "离线体验模式" : cfg?.llm?.provider}</Badge>
-            <button className="text-brand-600 hover:underline" onClick={() => nav("/settings")}>修改设置 →</button>
+            <button className="text-seal-600 hover:underline dark:text-seal-300" onClick={() => nav("/settings")}>修改设置 →</button>
           </div>
         )}
         {cfg?.llm?.provider === "fake" && (
-          <p className="mt-2 text-xs text-amber-600">⚠ 当前为离线体验模式，译文是假数据。要翻译真实书籍请先到 <button className="underline" onClick={() => nav("/settings")}>设置</button> 配置模型。</p>
+          <p className="mt-2 flex items-start gap-1.5 text-xs leading-relaxed text-[#8a6116] dark:text-[#d8b45e]">
+            <AlertTriangle size={13} className="mt-0.5 shrink-0" />
+            <span>当前为离线体验模式，译文是假数据。要翻译真实书籍请先到 <button className="underline" onClick={() => nav("/settings")}>设置</button> 配置模型。</span>
+          </p>
         )}
-        {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+        {error && <p className="mt-3 text-sm text-seal-700 dark:text-seal-300">{error}</p>}
         {uploaded && (
-          <div className="mt-4 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
-            ✓ 解析就绪：<b>{uploaded.slug}</b>。点击开始后 Wenyi 会分析全书风格并建立术语表。
+          <div className="mt-4 flex items-start gap-2 rounded-md bg-moss-50 p-3 text-sm leading-relaxed text-moss-700 dark:bg-moss-500/15 dark:text-moss-100">
+            <Check size={14} className="mt-1 shrink-0" />
+            <span>解析就绪：<b>{uploaded.slug}</b>。点击开始后 Wenyi 会分析全书风格并建立术语表。</span>
           </div>
         )}
         <div className="mt-5 flex justify-end gap-2">
           <Button variant="secondary" onClick={() => nav("/")}>取消</Button>
           {uploaded ? (
-            <Button size="lg" onClick={prepare} disabled={preparing}>{preparing ? <><Spinner /> 正在准备…</> : "🚀 开始翻译"}</Button>
+            <Button size="lg" onClick={prepare} disabled={preparing}>{preparing ? <><Spinner /> 正在准备…</> : <><Play size={14} /> 开始翻译</>}</Button>
           ) : (
             <Button size="lg" onClick={start} disabled={!file || uploading}>{uploading ? <><Spinner /> 上传中…</> : "上传文件"}</Button>
           )}
@@ -227,15 +243,16 @@ function BookView({ slug }: { slug: string }) {
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center gap-3">
-        <Button variant="ghost" size="sm" onClick={() => nav("/")}>← 书架</Button>
-        <h1 className="min-w-0 flex-1 truncate text-lg font-semibold">{m.title}</h1>
+        <Button variant="ghost" size="sm" onClick={() => nav("/")}><ChevronLeft size={14} /> 书架</Button>
+        <h1 className="min-w-0 flex-1 truncate font-serif text-xl font-semibold text-ink-900 dark:text-paper-100">{m.title}</h1>
         <Badge>{m.fmt}</Badge>
         <Badge tone="gray">{m.source_lang}→{m.target_lang}</Badge>
       </div>
-      <div className="flex gap-1 overflow-x-auto rounded-xl border border-gray-200 bg-gray-50 p-1 dark:border-gray-800 dark:bg-gray-900" role="tablist">
+      {/* 报头式页签 */}
+      <div className="flex gap-6 overflow-x-auto border-b border-ink-200/80 dark:border-ink-800" role="tablist">
         {TABS.map(([t, label]) => (
           <button key={t} role="tab" aria-selected={tab === t}
-            className={`whitespace-nowrap rounded-lg px-4 py-1.5 text-sm font-medium transition-all ${tab === t ? "bg-white text-brand-600 shadow-sm dark:bg-gray-800" : "text-gray-500 hover:text-gray-800 dark:hover:text-gray-200"}`}
+            className={`-mb-px whitespace-nowrap border-b-2 px-0.5 pb-2.5 pt-1 text-sm transition-colors ${tab === t ? "border-seal-600 font-medium text-seal-700 dark:border-seal-400 dark:text-seal-300" : "border-transparent text-ink-400 hover:text-ink-700 dark:hover:text-ink-200"}`}
             onClick={() => setTab(t)}>{label}</button>
         ))}
       </div>
@@ -282,38 +299,38 @@ function TranslateTab({ slug }: { slug: string }) {
     <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
       <div className="space-y-4">
         <Card className="p-5">
-          <h3 className="mb-1 text-sm font-semibold">翻译操作</h3>
-          <p className="mb-4 text-xs leading-relaxed text-gray-500 dark:text-gray-400">中断随时可续——已翻译的章节和批次不会重做。</p>
+          <h3 className="mb-1 font-serif text-[15px] font-semibold text-ink-800 dark:text-paper-100">翻译操作</h3>
+          <p className="mb-4 text-xs leading-relaxed text-ink-400">中断随时可续——已翻译的章节和批次不会重做。</p>
           <div className="space-y-2">
             <Button className="w-full" size="lg" onClick={() => start("translate")} disabled={busy || running}>
-              {running ? <Spinner /> : "▶"} {done > 0 ? "继续翻译" : "开始翻译"}
+              {running ? <Spinner /> : <Play size={14} />} {done > 0 ? "继续翻译" : "开始翻译"}
             </Button>
             <div className="grid grid-cols-2 gap-2">
-              <Button variant="secondary" onClick={() => start("review")} disabled={busy || running}>🔍 审校</Button>
-              <Button variant="secondary" onClick={() => start("qa")} disabled={busy || running}>✓ 一致性 QA</Button>
+              <Button variant="secondary" onClick={() => start("review")} disabled={busy || running}><Eye size={14} /> 审校</Button>
+              <Button variant="secondary" onClick={() => start("qa")} disabled={busy || running}><Shield size={14} /> 一致性 QA</Button>
             </div>
-            {running && <Button variant="danger" className="w-full" onClick={() => job && api.cancel(job.id)}>■ 取消任务</Button>}
+            {running && <Button variant="danger" className="w-full" onClick={() => job && api.cancel(job.id)}><Stop size={13} /> 取消任务</Button>}
           </div>
-          {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+          {error && <p className="mt-3 text-sm text-seal-700 dark:text-seal-300">{error}</p>}
         </Card>
         {job && job.progress && running && (
           <Card className="p-5"><Progress {...job.progress} /></Card>
         )}
         {job && !running && (
-          <Card className={`p-4 text-sm ${job.status === "succeeded" ? "text-emerald-600" : job.status === "failed" ? "text-red-600" : "text-gray-500 dark:text-gray-400"}`}>
-            {job.status === "succeeded" ? "✓ 任务完成" : job.status === "failed" ? `✗ 任务失败（退出码 ${job.exitCode}）` : "已取消"}
-            {job.status === "failed" && <button className="ml-2 text-xs underline" onClick={() => api.job(job.id).then((r) => setLogs(r.job.logTail ?? ""))}>查看日志</button>}
+          <Card className={`flex items-center gap-2 p-4 text-sm ${job.status === "succeeded" ? "text-moss-700 dark:text-moss-100" : job.status === "failed" ? "text-seal-700 dark:text-seal-300" : "text-ink-400"}`}>
+            {job.status === "succeeded" ? <><Check size={15} /> 任务完成</> : job.status === "failed" ? <><AlertTriangle size={15} /> 任务失败（退出码 {job.exitCode}）</> : "已取消"}
+            {job.status === "failed" && <button className="ml-1 inline-flex items-center gap-0.5 text-xs underline" onClick={() => api.job(job.id).then((r) => setLogs(r.job.logTail ?? ""))}><ListIcon size={12} /> 查看日志</button>}
           </Card>
         )}
         <Card className="p-5">
-          <h3 className="mb-3 text-sm font-semibold">章节进度 <span className="ml-1 text-xs font-normal text-gray-400">{done}/{chapters.length}</span></h3>
+          <h3 className="mb-3 font-serif text-[15px] font-semibold text-ink-800 dark:text-paper-100">章节进度 <span className="ml-1 text-xs font-normal tabular-nums text-ink-400">{done}/{chapters.length}</span></h3>
           <div className="max-h-80 space-y-0.5 overflow-y-auto">
             {chapters.map((c: any) => (
               <div key={c.index} className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm">
-                <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] ${c.status === "done" ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40" : "bg-gray-100 text-gray-400 dark:bg-gray-800"}`}>
-                  {c.status === "done" ? "✓" : c.index + 1}
+                <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] ${c.status === "done" ? "bg-moss-100 text-moss-700 dark:bg-moss-500/30 dark:text-moss-100" : "bg-ink-100 text-ink-400 dark:bg-ink-800"}`}>
+                  {c.status === "done" ? <Check size={11} /> : c.index + 1}
                 </span>
-                <span className={`truncate ${c.status === "done" ? "text-gray-700 dark:text-gray-200" : "text-gray-400"}`}>{c.title || `章节 ${c.index + 1}`}</span>
+                <span className={`truncate ${c.status === "done" ? "text-ink-600 dark:text-ink-200" : "text-ink-400"}`}>{c.title || `章节 ${c.index + 1}`}</span>
               </div>
             ))}
           </div>
@@ -321,23 +338,23 @@ function TranslateTab({ slug }: { slug: string }) {
       </div>
       <div className="space-y-4 xl:col-span-2">
         <Card className="flex h-72 flex-col p-0">
-          <div className="flex items-center justify-between border-b border-gray-100 px-5 py-3 dark:border-gray-800">
-            <h3 className="text-sm font-semibold">实时事件流</h3>
-            <Badge tone={running ? "green" : "gray"}>{running ? "● 运行中" : "空闲"}</Badge>
+          <div className="flex items-center justify-between border-b border-ink-200/70 px-5 py-3 dark:border-ink-800">
+            <h3 className="flex items-center gap-2 font-serif text-[15px] font-semibold text-ink-800 dark:text-paper-100"><Activity size={14} className="text-seal-600 dark:text-seal-400" /> 实时事件流</h3>
+            <Badge tone={running ? "green" : "gray"}>{running ? "运行中" : "空闲"}</Badge>
           </div>
-          <div className="flex-1 space-y-1 overflow-y-auto p-3" aria-live="polite">
-            {events.length === 0 ? <EmptyState icon="📡" title="等待事件…" hint="翻译过程中的每一步（批次完成、术语抽取等）会实时出现在这里" /> : events.slice().reverse().map((ev, i) => (
-              <div key={i} className="rounded-md bg-gray-50 px-2.5 py-1.5 font-mono text-xs dark:bg-gray-800/60">
-                <span className="font-semibold text-brand-600">{EVENT_NAMES[ev.event] ?? ev.event}</span>
-                {ev.chapter != null && <span className="ml-2 text-gray-400">第 {Number(ev.chapter) + 1} 章</span>}
-                {ev.detail && <span className="ml-2 text-gray-500 dark:text-gray-400">{String(ev.detail).slice(0, 90)}</span>}
+          <div className="flex-1 divide-y divide-ink-100 overflow-y-auto px-5 dark:divide-ink-800/70" aria-live="polite">
+            {events.length === 0 ? <EmptyState icon={<Activity size={20} />} title="等待事件…" hint="翻译过程中的每一步（批次完成、术语抽取等）会实时出现在这里" /> : events.slice().reverse().map((ev, i) => (
+              <div key={i} className="flex items-baseline gap-2 py-2 text-xs leading-relaxed">
+                <span className="shrink-0 font-medium text-seal-700 dark:text-seal-300">{EVENT_NAMES[ev.event] ?? ev.event}</span>
+                {ev.chapter != null && <span className="shrink-0 tabular-nums text-ink-400">第 {Number(ev.chapter) + 1} 章</span>}
+                {ev.detail && <span className="min-w-0 truncate text-ink-500 dark:text-ink-400">{String(ev.detail).slice(0, 90)}</span>}
               </div>
             ))}
           </div>
         </Card>
-        <Card className="p-0">
-          <div className="border-b border-gray-100 px-5 py-3 dark:border-gray-800"><h3 className="text-sm font-semibold">任务日志</h3></div>
-          <pre className="max-h-56 overflow-y-auto whitespace-pre-wrap p-4 text-xs leading-relaxed text-gray-600 dark:text-gray-300">{logs || "（暂无输出）"}</pre>
+        <Card className="overflow-hidden p-0">
+          <div className="border-b border-ink-200/70 px-5 py-3 dark:border-ink-800"><h3 className="font-serif text-[15px] font-semibold text-ink-800 dark:text-paper-100">任务日志</h3></div>
+          <pre className="max-h-56 overflow-y-auto whitespace-pre-wrap bg-ink-950 p-4 font-mono text-xs leading-relaxed text-ink-100 dark:bg-black/40">{logs || "（暂无输出）"}</pre>
         </Card>
       </div>
     </div>
@@ -382,20 +399,20 @@ function GlossaryTab({ slug }: { slug: string }) {
   return (
     <div className="space-y-5">
       {(conflicts?.items?.length ?? 0) > 0 && (
-        <Card className="border-amber-200 p-5 dark:border-amber-800">
-          <h3 className="mb-1 text-sm font-semibold text-amber-700 dark:text-amber-300">⚠ 需要你裁决的译法冲突（{conflicts.items.length}）</h3>
-          <p className="mb-4 text-xs leading-relaxed text-gray-500 dark:text-gray-400">同一术语在不同章节被译成了不同写法。选择一个全书统一的版本：</p>
+        <Card className="border-[#e3c98f] p-5 dark:border-[#5a4a22]">
+          <h3 className="mb-1 flex items-center gap-1.5 font-serif text-[15px] font-semibold text-[#8a6116] dark:text-[#d8b45e]"><AlertTriangle size={14} /> 需要你裁决的译法冲突（{conflicts.items.length}）</h3>
+          <p className="mb-4 text-xs leading-relaxed text-ink-400">同一术语在不同章节被译成了不同写法。选择一个全书统一的版本：</p>
           <div className="space-y-2.5">
             {conflicts.items.map((c: any) => (
-              <div key={c.id} className="flex flex-col gap-2.5 rounded-xl border border-amber-100 bg-amber-50/60 p-4 dark:border-amber-900/50 dark:bg-amber-900/20 sm:flex-row sm:items-center">
+              <div key={c.id} className="flex flex-col gap-2.5 rounded-lg border border-[#e9d9ae] bg-[#faf5e6] p-4 dark:border-[#4a3d1e] dark:bg-[#2a2413] sm:flex-row sm:items-center">
                 <div className="min-w-0 flex-1">
-                  <p className="font-mono text-sm font-semibold">{c.source}</p>
+                  <p className="font-mono text-sm font-semibold text-ink-800 dark:text-paper-100">{c.source}</p>
                   <div className="mt-1.5 flex flex-wrap items-center gap-2 text-sm">
-                    <span className="rounded-md bg-white px-2.5 py-1 shadow-sm dark:bg-gray-800"><b>{c.existing_target}</b> <span className="text-xs text-gray-400">现有</span></span>
-                    <span className="text-gray-400">vs</span>
-                    <span className="rounded-md bg-white px-2.5 py-1 shadow-sm dark:bg-gray-800"><b>{c.proposed_target}</b> <span className="text-xs text-gray-400">新提议</span></span>
+                    <span className="rounded bg-paper-50 px-2.5 py-1 shadow-card dark:bg-ink-800"><b>{c.existing_target}</b> <span className="text-xs text-ink-400">现有</span></span>
+                    <span className="text-ink-300">vs</span>
+                    <span className="rounded bg-paper-50 px-2.5 py-1 shadow-card dark:bg-ink-800"><b>{c.proposed_target}</b> <span className="text-xs text-ink-400">新提议</span></span>
                   </div>
-                  <p className="mt-1 text-xs text-gray-400">出现在第 {(c.chapter ?? 0) + 1} 章</p>
+                  <p className="mt-1 text-xs text-ink-400">出现在第 {(c.chapter ?? 0) + 1} 章</p>
                 </div>
                 <div className="flex shrink-0 gap-2">
                   <Button size="sm" variant="secondary" disabled={resolving === c.source} onClick={() => resolve(c.source, c.existing_target)}>保留现有</Button>
@@ -407,30 +424,30 @@ function GlossaryTab({ slug }: { slug: string }) {
         </Card>
       )}
       <Card className="p-0">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-5 py-3.5 dark:border-gray-800">
-          <h3 className="text-sm font-semibold">术语表 <Badge tone="brand">{data?.stats?.terms ?? 0} 条</Badge></h3>
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ink-200/70 px-5 py-3.5 dark:border-ink-800">
+          <h3 className="font-serif text-[15px] font-semibold text-ink-800 dark:text-paper-100">术语表 <Badge tone="brand">{data?.stats?.terms ?? 0} 条</Badge></h3>
           <div className="relative">
-            <input className="w-60 rounded-lg border border-gray-200 bg-gray-50 py-2 pl-9 pr-3 text-sm placeholder-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-gray-700 dark:bg-gray-950"
+            <input className="w-60 rounded-md border border-ink-200 bg-paper-100/60 py-2 pl-8 pr-3 text-sm placeholder-ink-300 focus:border-seal-500 focus:outline-none focus:ring-2 focus:ring-seal-500/15 dark:border-ink-700 dark:bg-ink-950"
               placeholder="搜索原文或译文…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="搜索术语" />
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden>🔍</span>
+            <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-ink-400" aria-hidden><Search size={13} /></span>
           </div>
         </div>
         {!data ? <SkeletonList rows={6} /> : data.items.length === 0 ? (
-          <EmptyState icon="🔤" title={q ? "没有匹配的术语" : "术语表还是空的"} hint={q ? "换个关键词试试" : "翻译过程中会自动从书中抽取人名、地名等术语"} />
+          <EmptyState icon={<Bookmark size={20} />} title={q ? "没有匹配的术语" : "术语表还是空的"} hint={q ? "换个关键词试试" : "翻译过程中会自动从书中抽取人名、地名等术语"} />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead><tr className="border-b border-gray-100 text-left text-xs text-gray-400 dark:border-gray-800">
+              <thead><tr className="border-b border-ink-200/70 text-left text-xs tracking-wide text-ink-400 dark:border-ink-800">
                 <th className="px-5 py-2.5 font-medium">原文</th><th className="py-2.5 pr-4 font-medium">译文</th>
                 <th className="py-2.5 pr-4 font-medium">类型</th><th className="py-2.5 pr-5 font-medium">状态</th>
               </tr></thead>
-              <tbody>
+              <tbody className="divide-y divide-ink-100 dark:divide-ink-800/70">
                 {data.items.map((t: any) => (
-                  <tr key={t.source} className="border-b border-gray-50 transition-colors last:border-0 hover:bg-gray-50/60 dark:border-gray-800/60 dark:hover:bg-gray-800/40">
+                  <tr key={t.source} className="transition-colors hover:bg-paper-100/60 dark:hover:bg-ink-800/50">
                     <td className="px-5 py-2.5 font-mono font-medium">{t.source}</td>
                     <td className="py-2.5 pr-4">{t.target}</td>
-                    <td className="py-2.5 pr-4 text-gray-500 dark:text-gray-400">{t.type}{t.gender ? ` · ${t.gender}` : ""}{t.aliases?.length ? ` · 又名 ${t.aliases.join("/")}` : ""}</td>
-                    <td className="py-2.5 pr-5"><Badge tone={t.status === "ok" ? "green" : "amber"}>{t.status === "ok" ? "✓" : "⚠"} {t.status === "ok" ? "正常" : "冲突"}</Badge></td>
+                    <td className="py-2.5 pr-4 text-ink-400">{t.type}{t.gender ? ` · ${t.gender}` : ""}{t.aliases?.length ? ` · 又名 ${t.aliases.join("/")}` : ""}</td>
+                    <td className="py-2.5 pr-5"><Badge tone={t.status === "ok" ? "green" : "amber"}>{t.status === "ok" ? "正常" : "冲突"}</Badge></td>
                   </tr>
                 ))}
               </tbody>
@@ -449,32 +466,32 @@ function ReviewTab({ slug }: { slug: string }) {
   useEffect(() => { api.reviews(slug).then((r) => setReviews(r.items)).catch(() => setReviews([])); }, [slug]);
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-      <Card className="lg:col-span-1 p-0">
-        <div className="border-b border-gray-100 px-4 py-3.5 dark:border-gray-800"><h3 className="text-sm font-semibold">审校历史</h3></div>
-        {!reviews ? <SkeletonList /> : reviews.length === 0 ? <EmptyState icon="🔍" title="尚无审校记录" hint="在「翻译」页点击「审校」按钮开始全书审校" /> :
+      <Card className="p-0 lg:col-span-1">
+        <div className="border-b border-ink-200/70 px-4 py-3.5 dark:border-ink-800"><h3 className="font-serif text-[15px] font-semibold text-ink-800 dark:text-paper-100">审校历史</h3></div>
+        {!reviews ? <SkeletonList /> : reviews.length === 0 ? <EmptyState icon={<Eye size={20} />} title="尚无审校记录" hint="在「翻译」页点击「审校」按钮开始全书审校" /> :
           <div className="max-h-[30rem] overflow-y-auto">
             {reviews.map((r) => (
-              <button key={r.id} className={`block w-full border-b border-gray-50 px-4 py-3 text-left transition-colors last:border-0 hover:bg-gray-50 dark:border-gray-800/60 dark:hover:bg-gray-800 ${selected?.review_id === r.id ? "bg-brand-50/50 dark:bg-brand-900/20" : ""}`}
+              <button key={r.id} className={`block w-full border-b border-ink-100 px-4 py-3 text-left transition-colors last:border-0 hover:bg-paper-100/70 dark:border-ink-800/70 dark:hover:bg-ink-800 ${selected?.review_id === r.id ? "bg-seal-50/60 dark:bg-seal-500/10" : ""}`}
                 onClick={() => api.reviewResult(slug, r.id).then(setSelected)}>
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-mono text-xs text-gray-500 dark:text-gray-400">{r.id.slice(7, 23)}</span>
+                  <span className="font-mono text-xs text-ink-400">{r.id.slice(7, 23)}</span>
                   <Badge tone={r.status === "completed" ? "green" : "red"}>{r.status === "completed" ? "完成" : "失败"}</Badge>
                 </div>
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{TERM_NAMES[r.termination] ?? r.termination} · {r.issueCount} 问题 · {r.changeCount} 修改建议</p>
+                <p className="mt-1 text-xs text-ink-400">{TERM_NAMES[r.termination] ?? r.termination} · {r.issueCount} 问题 · {r.changeCount} 修改建议</p>
               </button>
             ))}
           </div>}
       </Card>
       <Card className="p-5 lg:col-span-2">
-        {!selected ? <EmptyState icon="👈" title="选择一次审校查看详情" hint="问题清单与修改建议会显示在这里" /> : (
+        {!selected ? <EmptyState icon={<Eye size={20} />} title="选择一次审校查看详情" hint="问题清单与修改建议会显示在这里" /> : (
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-2">
               <Badge tone="blue">{TERM_NAMES[selected.termination] ?? selected.termination}</Badge>
               {selected.summary && <>
-                <Badge>🔍 {selected.summary.review_round_count ?? "?"} 轮审校</Badge>
-                <Badge>🩹 {selected.summary.patch_count ?? 0} 个补丁</Badge>
-                <Badge>🔁 {selected.summary.fix_round_count ?? 0} 轮修复</Badge>
-                <Badge>⏱ {selected.summary.clean_streak ?? 0} 连续干净</Badge>
+                <Badge>{selected.summary.review_round_count ?? "?"} 轮审校</Badge>
+                <Badge>{selected.summary.patch_count ?? 0} 个补丁</Badge>
+                <Badge>{selected.summary.fix_round_count ?? 0} 轮修复</Badge>
+                <Badge>{selected.summary.clean_streak ?? 0} 连续干净</Badge>
               </>}
             </div>
             {[
@@ -482,15 +499,15 @@ function ReviewTab({ slug }: { slug: string }) {
               ["changes", "修改建议", (selected.changes ?? []).length, "审校生成的建议替换——目前为只读建议，不自动改动正文"],
             ].map(([key, title, count, hint]) => (
               <div key={String(key)}>
-                <h4 className="mb-1.5 text-sm font-semibold">{title} <span className="ml-1 text-xs font-normal text-gray-400">{count}</span></h4>
-                <p className="mb-2 text-xs text-gray-400">{hint}</p>
-                <div className="max-h-56 overflow-y-auto rounded-lg border border-gray-100 dark:border-gray-800">
-                  {count === 0 ? <p className="px-4 py-6 text-center text-xs text-gray-400">无</p> :
+                <h4 className="mb-1.5 font-serif text-sm font-semibold text-ink-800 dark:text-paper-100">{title} <span className="ml-1 text-xs font-normal text-ink-400">{count}</span></h4>
+                <p className="mb-2 text-xs text-ink-400">{hint}</p>
+                <div className="max-h-56 divide-y divide-ink-100 overflow-y-auto rounded-md border border-ink-200/70 dark:divide-ink-800/70 dark:border-ink-800">
+                  {count === 0 ? <p className="px-4 py-6 text-center text-xs text-ink-400">无</p> :
                     (selected[key] ?? []).slice(0, 60).map((item: any, i: number) => (
-                      <div key={i} className="border-b border-gray-50 px-4 py-2.5 text-sm last:border-0 dark:border-gray-800/60">
-                        <span className="mr-2 text-xs text-gray-400">第 {Number(item.chapter) + 1} 章 · 段 {item.index}{item.type && ` · ${item.type}`}</span>
+                      <div key={i} className="px-4 py-2.5 text-sm">
+                        <span className="mr-2 text-xs text-ink-400">第 {Number(item.chapter) + 1} 章 · 段 {item.index}{item.type && ` · ${item.type}`}</span>
                         <p className="mt-0.5">{item.detail ?? item.suggested_target}</p>
-                        {item.suggestion && item.detail && <p className="mt-0.5 text-xs text-brand-600">建议：{item.suggestion}</p>}
+                        {item.suggestion && item.detail && <p className="mt-0.5 text-xs text-seal-700 dark:text-seal-300">建议：{item.suggestion}</p>}
                       </div>
                     ))}
                 </div>
@@ -521,11 +538,11 @@ function ReportTab({ slug }: { slug: string }) {
   return (
     <div className="space-y-5">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {[["📚", "章节", `${s.chapters_done}/${s.chapters_total}`], ["🔤", "术语", s.terms ?? 0],
-          ["ⓘ", "空译文", s.empty_targets ?? 0], ["🔁", "回译问题", s.backtranslation_issues ?? 0]].map(([icon, label, value]) => (
+        {[["章节", `${s.chapters_done}/${s.chapters_total}`], ["术语", s.terms ?? 0],
+          ["空译文", s.empty_targets ?? 0], ["回译问题", s.backtranslation_issues ?? 0]].map(([label, value]) => (
           <Card key={String(label)} className="p-4">
-            <p className="text-xs text-gray-400">{icon} {label}</p>
-            <p className="mt-1 text-2xl font-semibold tabular-nums text-gray-900 dark:text-white">{String(value)}</p>
+            <p className="text-xs text-ink-400">{label}</p>
+            <p className="mt-1 text-2xl font-semibold tabular-nums text-ink-900 dark:text-paper-100">{String(value)}</p>
           </Card>
         ))}
       </div>
@@ -533,16 +550,16 @@ function ReportTab({ slug }: { slug: string }) {
         <Card className="flex flex-wrap items-center gap-3 p-4">
           <Badge tone="blue">最近审校</Badge>
           <span className="text-sm">{TERM_NAMES[report.review.termination] ?? report.review.termination}</span>
-          <span className="text-xs text-gray-400">{report.review.issue_count} 问题 · {report.review.change_count} 修改建议 · <button className="text-brand-600 hover:underline" onClick={() => { /* 切到审校页由父组件处理 */ }}>查看详情</button></span>
+          <span className="text-xs text-ink-400">{report.review.issue_count} 问题 · {report.review.change_count} 修改建议</span>
         </Card>
       )}
       <Card className="p-5">
-        <h3 className="mb-3 text-sm font-semibold">跨章一致性问题 <Badge tone="amber">{(report.consistency_issues ?? []).length}</Badge></h3>
-        {(report.consistency_issues ?? []).length === 0 ? <EmptyState icon="✅" title="未发现一致性问题" hint="全书术语译法与人称保持一致" /> :
+        <h3 className="mb-3 flex items-center gap-2 font-serif text-[15px] font-semibold text-ink-800 dark:text-paper-100">跨章一致性问题 <Badge tone="amber">{(report.consistency_issues ?? []).length}</Badge></h3>
+        {(report.consistency_issues ?? []).length === 0 ? <EmptyState icon={<CheckCircle size={20} />} title="未发现一致性问题" hint="全书术语译法与人称保持一致" /> :
           (report.consistency_issues ?? []).map((iss: any, i: number) => (
-            <div key={i} className="border-b border-gray-50 py-2.5 text-sm last:border-0 dark:border-gray-800/60">
+            <div key={i} className="border-b border-ink-100 py-2.5 text-sm last:border-0 dark:border-ink-800/70">
               <Badge tone="amber">{iss.type}</Badge> <span className="ml-1">{iss.detail}</span>
-              {iss.where && <span className="ml-2 text-xs text-gray-400">{iss.where}</span>}
+              {iss.where && <span className="ml-2 text-xs text-ink-400">{iss.where}</span>}
             </div>
           ))}
       </Card>
@@ -569,42 +586,42 @@ function ExportTab({ slug }: { slug: string }) {
   return (
     <div className="space-y-5">
       <Card className="p-5">
-        <h3 className="mb-1 text-sm font-semibold">生成导出文件</h3>
-        <p className="mb-4 text-xs text-gray-500 dark:text-gray-400">从当前翻译状态组装产物，不会调用模型。</p>
+        <h3 className="mb-1 font-serif text-[15px] font-semibold text-ink-800 dark:text-paper-100">生成导出文件</h3>
+        <p className="mb-4 text-xs text-ink-400">从当前翻译状态组装产物，不会调用模型。</p>
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex rounded-lg border border-gray-200 p-0.5 dark:border-gray-700" role="radiogroup" aria-label="格式">
+          <div className="flex rounded-md border border-ink-200 p-0.5 dark:border-ink-700" role="radiogroup" aria-label="格式">
             {["epub", "txt", "html", "markdown"].map((f) => (
               <button key={f} role="radio" aria-checked={form === f}
-                className={`rounded-md px-3.5 py-1.5 text-sm font-medium transition-all ${form === f ? "bg-brand-600 text-white shadow-sm" : "text-gray-500 hover:text-gray-800 dark:hover:text-gray-200"}`}
+                className={`rounded px-3.5 py-1.5 text-sm font-medium transition-all ${form === f ? "bg-seal-600 text-paper-50 shadow-card" : "text-ink-400 hover:text-ink-700 dark:hover:text-ink-200"}`}
                 onClick={() => setForm(f)}>{f.toUpperCase()}</button>
             ))}
           </div>
-          <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-            <input type="checkbox" className="h-4 w-4 rounded accent-brand-600" checked={bilingual} onChange={(e) => setBilingual(e.target.checked)} />
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-ink-500 dark:text-ink-300">
+            <input type="checkbox" className="h-4 w-4 rounded accent-seal-600" checked={bilingual} onChange={(e) => setBilingual(e.target.checked)} />
             双语对照版
           </label>
-          <Button onClick={assemble} disabled={busy}>{busy ? <><Spinner /> 生成中…</> : "📦 生成文件"}</Button>
+          <Button onClick={assemble} disabled={busy}>{busy ? <><Spinner /> 生成中…</> : <><Package size={14} /> 生成文件</>}</Button>
         </div>
-        {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+        {error && <p className="mt-3 text-sm text-seal-700 dark:text-seal-300">{error}</p>}
       </Card>
       <Card className="p-0">
-        <div className="border-b border-gray-100 px-5 py-3.5 dark:border-gray-800">
-          <h3 className="text-sm font-semibold">已生成的文件 <Badge tone="brand">{exports?.length ?? 0}</Badge></h3>
+        <div className="border-b border-ink-200/70 px-5 py-3.5 dark:border-ink-800">
+          <h3 className="font-serif text-[15px] font-semibold text-ink-800 dark:text-paper-100">已生成的文件 <Badge tone="brand">{exports?.length ?? 0}</Badge></h3>
         </div>
-        {!exports ? <SkeletonList rows={2} /> : exports.length === 0 ? <EmptyState icon="📦" title="暂无导出文件" hint="点击上方「生成文件」创建第一个产物" /> :
-          <div>
+        {!exports ? <SkeletonList rows={2} /> : exports.length === 0 ? <EmptyState icon={<Package size={20} />} title="暂无导出文件" hint="点击上方「生成文件」创建第一个产物" /> :
+          <div className="divide-y divide-ink-100 dark:divide-ink-800/70">
             {exports.map((e) => (
               <a key={e.name} href={`/api/v1/books/${slug}/exports/${encodeURIComponent(e.name)}`}
-                className="flex items-center gap-4 border-b border-gray-50 px-5 py-3.5 text-sm transition-colors last:border-0 hover:bg-gray-50 dark:border-gray-800/60 dark:hover:bg-gray-800/40">
-                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 text-lg dark:bg-brand-900/40" aria-hidden>
-                  {e.format === "epub" ? "📗" : e.format === "pdf" ? "📕" : e.format === "txt" ? "📄" : "🌐"}
+                className="flex items-center gap-4 px-5 py-3.5 text-sm transition-colors hover:bg-paper-100/60 dark:hover:bg-ink-800/50">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-ink-200/80 bg-paper-100 text-ink-500 dark:border-ink-700 dark:bg-ink-800 dark:text-ink-300" aria-hidden>
+                  <FileText size={17} />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium">{e.name}</p>
-                  <p className="text-xs text-gray-400">{(e.size / 1024).toFixed(0)} KB · {new Date(e.mtime).toLocaleString("zh-CN")}</p>
+                  <p className="text-xs text-ink-400">{(e.size / 1024).toFixed(0)} KB · {new Date(e.mtime).toLocaleString("zh-CN")}</p>
                 </div>
                 {e.bilingual && <Badge tone="blue">双语</Badge>}
-                <span className="text-xs font-medium text-brand-600">下载 ↓</span>
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-seal-700 dark:text-seal-300"><Download size={12} /> 下载</span>
               </a>
             ))}
           </div>}
@@ -619,7 +636,7 @@ function UsageTab({ slug }: { slug: string }) {
   const [loading, setLoading] = useState(true);
   useEffect(() => { setLoading(true); api.usage(slug).then(setUsage).catch(() => setUsage(null)).finally(() => setLoading(false)); }, [slug]);
   if (loading) return <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">{[0, 1, 2, 3].map((i) => <Card key={i} className="h-24 animate-pulse" />)}</div>;
-  if (!usage) return <Card><EmptyState icon="📊" title="暂无用量数据" hint="翻译完成后可在此查看 token 消耗统计" /></Card>;
+  if (!usage) return <Card><EmptyState icon={<BarChart size={20} />} title="暂无用量数据" hint="翻译完成后可在此查看 token 消耗统计" /></Card>;
   const t = usage.totals ?? {};
   const stages = Object.entries(usage.by_stage ?? {}).sort((a: any, b: any) => (b[1].total_tokens ?? 0) - (a[1].total_tokens ?? 0));
   const maxTokens = Math.max(...stages.map(([, v]: any) => v.total_tokens ?? 0), 1);
@@ -627,27 +644,27 @@ function UsageTab({ slug }: { slug: string }) {
     <div className="space-y-5">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
-          ["📞", "总调用次数", (t.calls ?? 0).toLocaleString()],
-          ["⬆️", "输入 tokens", (t.prompt_tokens ?? 0).toLocaleString()],
-          ["⬇️", "输出 tokens", (t.completion_tokens ?? 0).toLocaleString()],
-          ["⚡", "缓存命中率", `${((t.cache_hit_rate ?? 0) * 100).toFixed(1)}%`],
-        ].map(([icon, label, value]) => (
+          ["总调用次数", (t.calls ?? 0).toLocaleString()],
+          ["输入 tokens", (t.prompt_tokens ?? 0).toLocaleString()],
+          ["输出 tokens", (t.completion_tokens ?? 0).toLocaleString()],
+          ["缓存命中率", `${((t.cache_hit_rate ?? 0) * 100).toFixed(1)}%`],
+        ].map(([label, value]) => (
           <Card key={label} className="p-4">
-            <p className="text-xs text-gray-400">{icon} {label}</p>
-            <p className="mt-1 text-xl font-semibold tabular-nums">{value}</p>
+            <p className="text-xs text-ink-400">{label}</p>
+            <p className="mt-1 text-xl font-semibold tabular-nums text-ink-900 dark:text-paper-100">{value}</p>
           </Card>
         ))}
       </div>
       <Card className="p-5">
-        <h3 className="mb-4 text-sm font-semibold">按环节分布</h3>
-        {stages.length === 0 ? <p className="text-xs text-gray-400">暂无数据</p> : stages.map(([stage, v]: any) => (
+        <h3 className="mb-4 font-serif text-[15px] font-semibold text-ink-800 dark:text-paper-100">按环节分布</h3>
+        {stages.length === 0 ? <p className="text-xs text-ink-400">暂无数据</p> : stages.map(([stage, v]: any) => (
           <div key={stage} className="mb-3.5 last:mb-0">
             <div className="mb-1 flex items-baseline justify-between text-xs">
               <span className="font-medium">{STAGE_NAMES[stage] ?? stage}</span>
-              <span className="tabular-nums text-gray-400">{(v.total_tokens ?? 0).toLocaleString()} tokens · {v.calls ?? 0} 次</span>
+              <span className="tabular-nums text-ink-400">{(v.total_tokens ?? 0).toLocaleString()} tokens · {v.calls ?? 0} 次</span>
             </div>
-            <div className="h-2.5 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
-              <div className="h-full rounded-full bg-gradient-to-r from-brand-400 to-brand-600 transition-all duration-700" style={{ width: `${Math.max(((v.total_tokens ?? 0) / maxTokens) * 100, 2)}%` }} />
+            <div className="h-2 overflow-hidden rounded-full bg-ink-200/70 dark:bg-ink-800">
+              <div className="h-full rounded-full bg-seal-500/85 transition-all duration-700" style={{ width: `${Math.max(((v.total_tokens ?? 0) / maxTokens) * 100, 2)}%` }} />
             </div>
           </div>
         ))}
@@ -684,21 +701,21 @@ function EventsTab({ slug }: { slug: string }) {
   const filtered = (events ?? []).filter((e) => !filter || (e.event ?? "").includes(filter));
   return (
     <Card className="p-0">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-5 py-3.5 dark:border-gray-800">
-        <h3 className="text-sm font-semibold">事件日志 <Badge tone="brand">{filtered.length}</Badge></h3>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ink-200/70 px-5 py-3.5 dark:border-ink-800">
+        <h3 className="font-serif text-[15px] font-semibold text-ink-800 dark:text-paper-100">事件日志 <Badge tone="brand">{filtered.length}</Badge></h3>
         <div className="relative">
-          <input className="w-56 rounded-lg border border-gray-200 bg-gray-50 py-2 pl-9 pr-3 text-sm placeholder-gray-400 focus:border-brand-500 focus:outline-none dark:border-gray-700 dark:bg-gray-950"
+          <input className="w-56 rounded-md border border-ink-200 bg-paper-100/60 py-2 pl-8 pr-3 text-sm placeholder-ink-300 focus:border-seal-500 focus:outline-none dark:border-ink-700 dark:bg-ink-950"
             placeholder="过滤事件名…" value={filter} onChange={(e) => setFilter(e.target.value)} aria-label="过滤事件" />
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden>🔍</span>
+          <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-ink-400" aria-hidden><Search size={13} /></span>
         </div>
       </div>
-      {!events ? <SkeletonList rows={8} /> : filtered.length === 0 ? <EmptyState icon="📜" title={filter ? "无匹配事件" : "暂无事件"} /> : (
+      {!events ? <SkeletonList rows={8} /> : filtered.length === 0 ? <EmptyState icon={<ListIcon size={20} />} title={filter ? "无匹配事件" : "暂无事件"} /> : (
         <div className="max-h-[34rem] overflow-y-auto">
           {filtered.slice().reverse().map((e, i) => (
-            <div key={i} className="flex items-baseline gap-3 border-b border-gray-50 px-5 py-2 font-mono text-xs last:border-0 dark:border-gray-800/60">
-              <span className="shrink-0 text-gray-300 dark:text-gray-600">{e.ts ?? ""}</span>
-              <span className="shrink-0 font-semibold text-brand-600">{EVENT_NAMES[e.event] ?? e.event}</span>
-              <span className="min-w-0 truncate text-gray-500 dark:text-gray-400">{JSON.stringify({ ...e, ts: undefined, event: undefined, line: undefined }).slice(0, 140)}</span>
+            <div key={i} className="flex items-baseline gap-3 border-b border-ink-100 px-5 py-2 font-mono text-xs last:border-0 dark:border-ink-800/70">
+              <span className="shrink-0 text-ink-300 dark:text-ink-500">{e.ts ?? ""}</span>
+              <span className="shrink-0 font-semibold text-seal-700 dark:text-seal-300">{EVENT_NAMES[e.event] ?? e.event}</span>
+              <span className="min-w-0 truncate text-ink-400">{JSON.stringify({ ...e, ts: undefined, event: undefined, line: undefined }).slice(0, 140)}</span>
             </div>
           ))}
         </div>
@@ -711,17 +728,17 @@ function EventsTab({ slug }: { slug: string }) {
 function CommandPalette({ onClose, books }: { onClose: () => void; books: BookItem[] }) {
   const [q, setQ] = useState("");
   const actions = [
-    { icon: "📚", label: "打开书架", run: () => nav("/") },
-    { icon: "➕", label: "新建翻译任务", run: () => nav("/new") },
-    { icon: "⚙️", label: "设置", run: () => nav("/settings") },
-    ...books.map((b) => ({ icon: "📖", label: `打开《${b.title}》`, run: () => nav(`/book/${b.slug}`) })),
+    { icon: <Book size={15} />, label: "打开书架", run: () => nav("/") },
+    { icon: <Plus size={15} />, label: "新建翻译任务", run: () => nav("/new") },
+    { icon: <Sliders size={15} />, label: "设置", run: () => nav("/settings") },
+    ...books.map((b) => ({ icon: <BookOpen size={15} />, label: `打开《${b.title}》`, run: () => nav(`/book/${b.slug}`) })),
   ].filter((a) => !q || a.label.toLowerCase().includes(q.toLowerCase()));
   const [idx, setIdx] = useState(0);
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 pt-[15vh] backdrop-blur-sm" onClick={onClose} role="dialog" aria-label="命令面板">
-      <div className="w-[30rem] max-w-[92vw] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-900"
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-ink-950/50 pt-[15vh] backdrop-blur-sm" onClick={onClose} role="dialog" aria-label="命令面板">
+      <div className="w-[30rem] max-w-[92vw] overflow-hidden rounded-xl border border-ink-200 bg-paper-50 shadow-raised dark:border-ink-700 dark:bg-ink-900"
         onClick={(e) => e.stopPropagation()}>
-        <input autoFocus className="w-full border-b border-gray-100 bg-transparent px-4 py-3.5 text-sm outline-none placeholder:text-gray-400 dark:border-gray-800"
+        <input autoFocus className="w-full border-b border-ink-200/70 bg-transparent px-4 py-3.5 text-sm text-ink-800 outline-none placeholder:text-ink-300 dark:border-ink-800 dark:text-ink-100"
           placeholder="搜索命令或书名…" value={q}
           onChange={(e) => { setQ(e.target.value); setIdx(0); }}
           onKeyDown={(e) => {
@@ -731,20 +748,20 @@ function CommandPalette({ onClose, books }: { onClose: () => void; books: BookIt
             if (e.key === "Enter" && actions[idx]) { actions[idx].run(); onClose(); }
           }} />
         <div className="max-h-72 overflow-y-auto p-2">
-          {actions.length === 0 ? <p className="px-3 py-6 text-center text-xs text-gray-400">没有匹配项</p> : actions.map((a, i) => (
-            <button key={i} className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm ${i === idx ? "bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300" : "hover:bg-gray-50 dark:hover:bg-gray-800"}`}
+          {actions.length === 0 ? <p className="px-3 py-6 text-center text-xs text-ink-400">没有匹配项</p> : actions.map((a, i) => (
+            <button key={i} className={`flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left text-sm ${i === idx ? "bg-seal-50 text-seal-800 dark:bg-seal-500/15 dark:text-seal-200" : "text-ink-600 hover:bg-paper-100 dark:text-ink-200 dark:hover:bg-ink-800"}`}
               onMouseEnter={() => setIdx(i)} onClick={() => { a.run(); onClose(); }}>
-              <span aria-hidden>{a.icon}</span>{a.label}
+              <span className="text-ink-400" aria-hidden>{a.icon}</span>{a.label}
             </button>
           ))}
         </div>
-        <div className="border-t border-gray-100 px-4 py-2 text-[10px] text-gray-400 dark:border-gray-800">↑↓ 选择 · Enter 确认 · Esc 关闭</div>
+        <div className="border-t border-ink-200/70 px-4 py-2 text-[10px] text-ink-400 dark:border-ink-800">↑↓ 选择 · Enter 确认 · Esc 关闭</div>
       </div>
     </div>
   );
 }
 
-// ---- App 根：侧边栏布局 ----
+// ---- App 根：墨色侧栏 + 纸面主区 ----
 function App() {
   const route = useHashRoute();
   const { theme, toggle } = useTheme();
@@ -761,53 +778,54 @@ function App() {
   const slug = route.startsWith("/book/") ? decodeURIComponent(route.slice(6)) : null;
   const current = slug ? books.find((b) => b.slug === slug) : null;
   const navItems = [
-    { icon: "📚", label: "书架", to: "/", active: route === "/" },
-    { icon: "➕", label: "新建任务", to: "/new", active: route === "/new" },
-    { icon: "⚙️", label: "设置", to: "/settings", active: route === "/settings" },
-    ...(current ? [{ icon: "📖", label: current.title.slice(0, 8), to: `/book/${slug}`, active: true }] : []),
+    { icon: <BookOpen size={15} />, label: "书架", to: "/", active: route === "/" },
+    { icon: <Plus size={15} />, label: "新建任务", to: "/new", active: route === "/new" },
+    { icon: <Sliders size={15} />, label: "设置", to: "/settings", active: route === "/settings" },
+    ...(current ? [{ icon: <Book size={15} />, label: current.title.slice(0, 8), to: `/book/${slug}`, active: true }] : []),
   ];
   return (
-    <div className="flex min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
-      {/* 侧边栏 */}
-      <aside className={`fixed inset-y-0 left-0 z-40 flex w-60 flex-col border-r border-gray-200 bg-white transition-transform dark:border-gray-800 dark:bg-gray-900 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
+    <div className="flex min-h-screen">
+      {/* 墨色侧栏 */}
+      <aside className={`fixed inset-y-0 left-0 z-40 flex w-56 flex-col bg-ink-950 text-ink-200 transition-transform lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <button className="flex items-center gap-2.5 px-5 py-5 text-left" onClick={() => { nav("/"); setSidebarOpen(false); }}>
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-indigo-600 text-lg text-white shadow-sm" aria-hidden>📖</span>
-          <div><p className="text-[15px] font-bold leading-tight">Wenyi</p><p className="text-[10px] text-gray-400">小说翻译工作台</p></div>
+          <span className="flex h-9 w-9 select-none items-center justify-center rounded bg-seal-600 font-serif text-lg text-paper-50 shadow-card" aria-hidden>译</span>
+          <div><p className="font-serif text-[15px] font-bold tracking-wide text-paper-50">Wenyi</p><p className="text-[10px] text-ink-400">小说翻译工作台</p></div>
         </button>
-        <nav className="flex-1 space-y-1 overflow-y-auto px-3" aria-label="主导航">
+        <nav className="flex-1 space-y-0.5 overflow-y-auto px-3" aria-label="主导航">
           {navItems.map((item) => (
             <button key={item.to}
-              className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${item.active ? "bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300" : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white"}`}
+              className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors ${item.active ? "bg-seal-600 font-medium text-paper-50" : "text-ink-300 hover:bg-white/5 hover:text-paper-100"}`}
               onClick={() => { nav(item.to); setSidebarOpen(false); }}>
               <span aria-hidden>{item.icon}</span><span className="truncate">{item.label}</span>
             </button>
           ))}
         </nav>
-        <div className="space-y-2 border-t border-gray-100 p-3 dark:border-gray-800">
-          <button className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800"
+        <div className="space-y-1 border-t border-white/5 p-3">
+          <button className="flex w-full items-center justify-between rounded-md px-3 py-2 text-xs text-ink-400 hover:bg-white/5 hover:text-ink-200"
             onClick={() => setPaletteOpen(true)}>
-            <span>搜索…</span><kbd className="rounded border border-gray-200 px-1.5 py-0.5 font-mono text-[10px] dark:border-gray-700">Ctrl K</kbd>
+            <span className="flex items-center gap-1.5"><Search size={12} /> 搜索…</span>
+            <kbd className="flex items-center gap-0.5 rounded border border-white/10 px-1.5 py-0.5 font-mono text-[10px]"><Command size={9} /> K</kbd>
           </button>
-          <div className="flex items-center justify-between rounded-lg px-3 py-2">
-            <span className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
-              <span className={`h-2 w-2 rounded-full ${meta?.engineAvailable ? "bg-emerald-500" : "bg-red-400"}`} aria-hidden />
+          <div className="flex items-center justify-between rounded-md px-3 py-2">
+            <span className="flex items-center gap-1.5 text-xs text-ink-400">
+              <span className={`h-2 w-2 rounded-full ${meta?.engineAvailable ? "bg-moss-500" : "bg-seal-500"}`} aria-hidden />
               引擎 {meta?.engineVersion ?? "…"}
             </span>
-            <button onClick={toggle} className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800" aria-label="切换深浅主题">
-              {theme === "dark" ? "☀️" : "🌙"}
+            <button onClick={toggle} className="rounded-md p-1.5 text-ink-400 hover:bg-white/5 hover:text-paper-100" aria-label="切换深浅主题">
+              {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
             </button>
           </div>
         </div>
       </aside>
       {/* 移动端遮罩 */}
-      {sidebarOpen && <div className="fixed inset-0 z-30 bg-black/40 lg:hidden" onClick={() => setSidebarOpen(false)} aria-hidden />}
+      {sidebarOpen && <div className="fixed inset-0 z-30 bg-ink-950/50 lg:hidden" onClick={() => setSidebarOpen(false)} aria-hidden />}
       {/* 主内容 */}
       <div className="min-w-0 flex-1">
-        <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-gray-200/70 bg-gray-50/80 px-4 py-3 backdrop-blur dark:border-gray-800/70 dark:bg-gray-950/80 lg:hidden">
-          <button className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800" onClick={() => setSidebarOpen(true)} aria-label="打开菜单">☰</button>
-          <span className="text-sm font-semibold">Wenyi</span>
+        <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-ink-200/70 bg-paper-100/85 px-4 py-3 backdrop-blur dark:border-ink-800 dark:bg-ink-950/85 lg:hidden">
+          <button className="rounded-md p-1.5 text-ink-500 hover:bg-ink-100 dark:hover:bg-ink-800" onClick={() => setSidebarOpen(true)} aria-label="打开菜单"><Menu size={16} /></button>
+          <span className="font-serif text-sm font-semibold">Wenyi</span>
         </header>
-        <main className="mx-auto max-w-6xl px-4 py-6 lg:px-8">
+        <main className="mx-auto max-w-6xl px-4 py-7 lg:px-8">
           {slug ? <BookView slug={slug} /> : route === "/new" ? <NewTask /> : route === "/settings" ? <SettingsForm /> : <Dashboard />}
         </main>
       </div>
