@@ -287,7 +287,7 @@ func (o *Orchestrator) TranslateTitles(store *RunStore, glossaryStore *glossary.
 		data, err := o.Client.CompleteJSON([]llm.Message{
 			{Role: "system", Content: system},
 			{Role: "user", Content: user},
-		}, "strong", nil, "title_translate")
+		}, o.Config.Pipeline.TierFor("title_translate", "strong"), nil, "title_translate")
 		if err != nil {
 			_ = store.LogEvent("titles_translation_failed", map[string]any{
 				"batch": bi, "count": n, "error": fmt.Sprintf("%v", err),

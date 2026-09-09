@@ -189,7 +189,7 @@ func (o *Orchestrator) DetectLanguageAI(doc *ingest.Document) string {
 	data, err := o.Client.CompleteJSON([]llm.Message{
 		{Role: "system", Content: system},
 		{Role: "user", Content: sample},
-	}, "cheap", nil, "language_detect")
+	}, o.Config.Pipeline.TierFor("language_detect", "cheap"), nil, "language_detect")
 	if err != nil {
 		return ""
 	}

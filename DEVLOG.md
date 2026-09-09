@@ -82,3 +82,25 @@
 - Go 189（config/llm/providers/factory/glossary/agents/review/pipeline/punct/cli）
 - Node 95（ingest 48 + assemble 15 + pdf 4 + runall 3 + web 17 + 冒烟 8）
 - .NET 4（QuestPDF 渲染冒烟）
+
+### WebUI 视觉重设计（完成 ✅ 2026-09-09，书卷纸感设计系统）
+- 设计语言：纸色（paper 米白）做底 + 墨色（ink 暖黑）做字与边 + 朱砂（seal #a53c26）唯一强调色，成功态用竹绿（moss）；tailwind.config.js 单一真源，brand 保留为 seal 兼容别名
+- 排印：标题/书名/分区标题用衬线（Georgia + 思源宋体/宋体栈，无网络字体依赖，离线可用）；数据数字一律无衬线 tabular-nums（Georgia 老式数字不用于数据）
+- 图标：新增 src/icons.tsx（feather 风格 SVG，stroke 1.7），替换界面全部 emoji；favicon 换朱砂印章「译」
+- 布局：墨色侧栏（含印章 logo/搜索 kbd/引擎状态/主题切换）；首页纸面欢迎卡（竖排「落纸云烟」水印 + 印章）、编辑部式统计行；书籍卡书脊改低饱和染布色；书籍详情页签改报头式下划线；任务日志改墨底终端块；事件流去灰底改分隔线列表
+- 设置页：厂商 emoji → 衬线单字头像（Monogram）；语言下拉去国旗 emoji；密钥/体验模式提示改暖纸色系
+- 验证：tsc + vite build 通过、oxlint 0 error；headless CDP 截图逐页核对（首页/新建/设置/详情 7 页签 × 明暗两主题）
+- 已知取舍：命令面板/下拉等交互逻辑零改动（纯表现层重写）；EmptyState icon 属性由 string 改 ReactNode（调用点同步更新）
+
+### 方案二：Web 后端 Go 化 + 单 exe 入口（完成 ✅ 2026-09-09）
+- internal/webserver/（新包，替代 node/src/web）：serve.js/spawn.js/slugify.js 全量移植——JobRegistry（--progress-line 解析/日志尾/BUSY/取消幂等/进程树 kill）、SSE（job.status/progress/log + 书级 engine.event 游标续传/reset/heartbeat）、全 REST 端点（分册 10 §4 全集：系统/书架/章节/任务/术语 sqlite 直连/审校/QA/导出/事件/config/上传）、Host 白名单闸
+- 前端内嵌：go:embed internal/webserver/static（make webui = build-ui → 复制 → 重编）；fresh clone 无产物时回落 placeholder.html；WENYI_UI_DIR 磁盘覆盖（开发态）
+- `wenyi web` 子命令：单 exe 启动（16.8MB），浏览器自动打开；引擎 spawn 指向自身（os.Executable），WENYI_ENGINE 可覆盖（测试用）
+- 配置体系：默认解析链 exe 同目录 config.json → config.yaml → CWD config.yaml；PUT /config 时旧 YAML 一次性迁移为 config.json（原文件改 .bak）；语义校验升级（FromDict 全量，比 Node 版只查语法更强）；DefaultConfigJSON 由默认 YAML 转换保证等价
+- llm.api_key 直存：providers（compat 全家 + gemini）读取优先级 api_key > api_key_env > 默认 env；ValidateCredentials 文案同步
+- pipeline.stage_tiers 环节档位覆盖：key 白名单 13 个（CamelCase StageName 自动转 snake 匹配），Agent 基类 + 3 处直连调用点（language_detect/title_translate/Reviewer）走 TierFor；审校智能体三环节维持 review_agent_tier
+- 设置页：API Key 掩码输入 +「环节 × 模型分配」区块（11 环节难度说明 + 跟随推荐/质量/均衡/省钱四选 + 审校智能体行）+ 源码模式（JSON）+ 未知键保留（快照合并式 toConfigJson，修复旧 toYaml 丢 review_agent_tier 一类问题）
+- 伪路由环境改为每次 spawn 按当前配置计算（界面切 fake 即时生效，无需重启）
+- 测试：webserver 19 例（14 单元移植 + 3 e2e 移植 + SSE 线格式 + 并发冒烟；TestMain 现场构建引擎）+ config 4 例新字段，全绿；node --test 78 例（原 95 − web 17 移除）
+- 移除：node/src/web/*、web-*.test.js、cli.js web 分支、fastify/@fastify/*/better-sqlite3/open 依赖
+- 已知边界：doc parse/assemble 仍需 node（引擎 spawn exe 同目录 node/cli.js 或 WENYI_NODE_CLI），发布包需捆绑 node 组件目录——方案二范围外，见发布物说明

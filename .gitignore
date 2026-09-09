@@ -17,3 +17,7 @@ nonexistent-config-test.yaml
 .vscode/
 .DS_Store
 Thumbs.db
+
+# 内嵌 WebUI 构建产物（占位页除外，见 internal/webserver/static/placeholder.html）
+internal/webserver/static/*
+!internal/webserver/static/placeholder.html

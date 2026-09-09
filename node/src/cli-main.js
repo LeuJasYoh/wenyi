@@ -1,5 +1,5 @@
 // wenyi-node 命令分派。
-export const VERSION = "0.4.1";
+export const VERSION = "0.5.0";
 
 export async function main(argv) {
   const [group, sub, ...rest] = argv;
@@ -21,11 +21,7 @@ export async function main(argv) {
       return cmdDocAssemble(rest);
     }
   }
-  if (group === "web" && sub === "serve") {
-    const { cmdWebServe } = await import("./web/serve.js");
-    return cmdWebServe(rest);
-  }
-  console.error(`未知命令：${argv.join(" ")}（可用：doc parse|assemble、web serve、--help、--version）`);
+  console.error(`未知命令：${argv.join(" ")}（可用：doc parse|assemble、--help、--version）`);
   return 2;
 }
 
@@ -35,6 +31,5 @@ function printHelp() {
 用法：
   node cli.js doc parse    --input X --state-dir Y [--split N] [--lang SRC,TGT]
   node cli.js doc assemble --input X --state-dir Y [--format F] [--bilingual] ...
-  node cli.js web serve    [--port 8731] [--no-open]
   node cli.js --version`);
 }

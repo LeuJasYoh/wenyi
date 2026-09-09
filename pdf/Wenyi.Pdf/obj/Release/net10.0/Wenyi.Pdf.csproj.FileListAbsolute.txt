@@ -64,3 +64,4 @@ D:\Projects\wenyi-multi\pdf\Wenyi.Pdf\obj\Release\net10.0\refint\Wenyi.Pdf.dll
 D:\Projects\wenyi-multi\pdf\Wenyi.Pdf\obj\Release\net10.0\Wenyi.Pdf.pdb
 D:\Projects\wenyi-multi\pdf\Wenyi.Pdf\obj\Release\net10.0\Wenyi.Pdf.genruntimeconfig.cache
 D:\Projects\wenyi-multi\pdf\Wenyi.Pdf\obj\Release\net10.0\ref\Wenyi.Pdf.dll
+D:\Projects\wenyi-multi\pdf\Wenyi.Pdf\obj\Release\net10.0\Wenyi.Pdf.sourcelink.json

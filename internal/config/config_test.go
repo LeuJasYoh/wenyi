@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -189,4 +190,106 @@ func TestCompatibleReasoningStyleIsLoaded(t *testing.T) {
 	if cfg.LLM.ReasoningStyle != "deepseek" {
 		t.Errorf("reasoning_style = %q", cfg.LLM.ReasoningStyle)
 	}
+}
+
+func TestAPIKeyDirectStorage(t *testing.T) {
+	cfg, err := FromDict(map[string]any{
+		"llm": map[string]any{"provider": "deepseek", "api_key": "sk-test-123"},
+	})
+	if err != nil {
+		t.Fatalf("FromDict: %v", err)
+	}
+	if cfg.LLM.APIKey == nil || *cfg.LLM.APIKey != "sk-test-123" {
+		t.Fatalf("api_key 应直存，实际 %v", cfg.LLM.APIKey)
+	}
+	// JSON 配置同样解析（JSON 是 YAML 子集）
+	jsonCfg, err := Load(writeTemp(t, `{"llm":{"provider":"deepseek","api_key":"sk-json"}}`))
+	if err != nil {
+		t.Fatalf("Load JSON: %v", err)
+	}
+	if jsonCfg.LLM.APIKey == nil || *jsonCfg.LLM.APIKey != "sk-json" {
+		t.Fatalf("JSON api_key 应直存，实际 %v", jsonCfg.LLM.APIKey)
+	}
+}
+
+func TestStageTiersOverride(t *testing.T) {
+	cfg, err := FromDict(map[string]any{
+		"pipeline": map[string]any{"stage_tiers": map[string]any{
+			"translator": "cheap", "glossary_extractor": "strong", "language_detect": "fast",
+		}},
+	})
+	if err != nil {
+		t.Fatalf("FromDict: %v", err)
+	}
+	if got := cfg.Pipeline.TierFor("Translator", "strong"); got != "cheap" {
+		t.Errorf("Translator 覆盖应生效，实际 %q", got)
+	}
+	if got := cfg.Pipeline.TierFor("GlossaryExtractor", "fast"); got != "strong" {
+		t.Errorf("GlossaryExtractor 覆盖应生效，实际 %q", got)
+	}
+	if got := cfg.Pipeline.TierFor("language_detect", "cheap"); got != "fast" {
+		t.Errorf("language_detect 覆盖应生效，实际 %q", got)
+	}
+	if got := cfg.Pipeline.TierFor("Polisher", "strong"); got != "strong" {
+		t.Errorf("未覆盖环节应回落默认，实际 %q", got)
+	}
+	// 未知环节 key 报错
+	if _, err := FromDict(map[string]any{
+		"pipeline": map[string]any{"stage_tiers": map[string]any{"bogus_stage": "cheap"}},
+	}); err == nil {
+		t.Error("未知环节应报错")
+	}
+	// 非法档位报错
+	if _, err := FromDict(map[string]any{
+		"pipeline": map[string]any{"stage_tiers": map[string]any{"translator": "mega"}},
+	}); err == nil {
+		t.Error("非法档位应报错")
+	}
+}
+
+func TestDefaultConfigJSONRoundTrip(t *testing.T) {
+	js := DefaultConfigJSON()
+	cfg, err := Load(writeTemp(t, js))
+	if err != nil {
+		t.Fatalf("默认 JSON 应可加载：%v\n%s", err, js)
+	}
+	yamlCfg, err := Load(writeTemp(t, DefaultConfigYAML()))
+	if err != nil {
+		t.Fatalf("默认 YAML 应可加载：%v", err)
+	}
+	if cfg.LLM.Provider != yamlCfg.LLM.Provider || cfg.Pipeline.Polish != yamlCfg.Pipeline.Polish ||
+		cfg.Segment.MaxCharsPerBatch != yamlCfg.Segment.MaxCharsPerBatch {
+		t.Fatal("默认 JSON 与 YAML 内容应等价")
+	}
+}
+
+func TestCreateDefaultFileJSON(t *testing.T) {
+	dir := t.TempDir()
+	p := filepath.Join(dir, "config.json")
+	created, err := CreateDefaultFile(p)
+	if err != nil || !created {
+		t.Fatalf("CreateDefaultFile(json)：%v created=%v", err, created)
+	}
+	var v any
+	if err := json.Unmarshal([]byte(mustRead(t, p)), &v); err != nil {
+		t.Fatalf("生成的应为合法 JSON：%v", err)
+	}
+}
+
+func writeTemp(t *testing.T, content string) string {
+	t.Helper()
+	p := filepath.Join(t.TempDir(), "config.tmp")
+	if err := os.WriteFile(p, []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	return p
+}
+
+func mustRead(t *testing.T, p string) string {
+	t.Helper()
+	b, err := os.ReadFile(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(b)
 }

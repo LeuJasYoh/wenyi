@@ -3,9 +3,12 @@ package config
 
 import (
 	_ "embed"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
+	"unicode"
 
 	"gopkg.in/yaml.v3"
 )
@@ -26,6 +29,7 @@ type TierConfig struct {
 type LLMConfig struct {
 	Provider       string
 	BaseURL        *string
+	APIKey         *string // 直存密钥（WebUI 配置；优先于 api_key_env）
 	APIKeyEnv      *string
 	ReasoningStyle string
 	Timeout        int
@@ -60,6 +64,7 @@ type PipelineConfig struct {
 	ReviewFixMaxRounds            int
 	ReviewCleanConfirmations      int
 	GlossaryScope                 string
+	StageTiers                    map[string]string // 环节 → 档位覆盖（key 见 validStageTierKeys）
 }
 
 // OutputConfig 对应 OutputConfig。
@@ -219,6 +224,43 @@ func getBoolPy(m map[string]any, key string, def bool) bool {
 var validReasoningStyles = map[string]bool{"none": true, "deepseek": true, "openai": true, "openrouter": true}
 var validAgentTiers = map[string]bool{"strong": true, "cheap": true, "fast": true}
 
+// 环节档位覆盖允许的环节 key（审校智能体三环节走既有 review_agent_tier，不在此列）。
+var validStageTierKeys = map[string]bool{
+	"translator": true, "polisher": true, "reviewer": true, "analyzer": true, "synopsizer": true,
+	"glossary_extractor": true, "annotationaligner": true, "annotation_aligner": true,
+	"back_translator": true, "backtranslator": true, "consistency_checker": true,
+	"language_detect": true, "title_translate": true,
+}
+
+var stageTierKeyList = []string{
+	"translator", "polisher", "reviewer", "analyzer", "synopsizer", "glossary_extractor",
+	"annotationaligner", "annotation_aligner", "back_translator", "backtranslator",
+	"consistency_checker", "language_detect", "title_translate",
+}
+
+// TierFor 环节档位覆盖：stage 为用量归因名（如 "Translator"/"language_detect"），
+// 命中 stage_tiers 返回覆盖值，否则返回 def。CamelCase 自动转 snake 匹配。
+func (p *PipelineConfig) TierFor(stage, def string) string {
+	if len(p.StageTiers) == 0 {
+		return def
+	}
+	if t, ok := p.StageTiers[stageTierKey(stage)]; ok {
+		return t
+	}
+	return def
+}
+
+func stageTierKey(stage string) string {
+	var b strings.Builder
+	for i, r := range stage {
+		if r >= 'A' && r <= 'Z' && i > 0 {
+			b.WriteByte('_')
+		}
+		b.WriteRune(unicode.ToLower(r))
+	}
+	return b.String()
+}
+
 func inRange(name string, v, lo, hi int) error {
 	if v < lo || v > hi {
 		return fmt.Errorf("pipeline.%s 必须在 %d..%d 之间（实际 %d）", name, lo, hi, v)
@@ -272,6 +314,13 @@ func FromDict(raw map[string]any) (*Config, error) {
 				cfg.LLM.BaseURL = nil
 			} else if s, ok2 := v.(string); ok2 {
 				cfg.LLM.BaseURL = &s
+			}
+		}
+		if v, ok := llmRaw["api_key"]; ok {
+			if v == nil {
+				cfg.LLM.APIKey = nil
+			} else if s, ok2 := v.(string); ok2 {
+				cfg.LLM.APIKey = &s
 			}
 		}
 		if v, ok := llmRaw["api_key_env"]; ok {
@@ -349,6 +398,19 @@ func FromDict(raw map[string]any) (*Config, error) {
 			pc.ReviewCleanConfirmations = v
 		}
 		pc.GlossaryScope, _ = getStr(p, "glossary_scope", pc.GlossaryScope)
+		if st := asMap(getAny(p, "stage_tiers")); st != nil {
+			pc.StageTiers = map[string]string{}
+			for k, v := range st {
+				if !validStageTierKeys[k] {
+					return nil, fmt.Errorf("pipeline.stage_tiers 含未知环节 %q（允许：%s）", k, strings.Join(stageTierKeyList, "/"))
+				}
+				s, ok := v.(string)
+				if !ok || !validAgentTiers[s] {
+					return nil, fmt.Errorf("pipeline.stage_tiers.%s 非法值 %v（允许：strong/cheap/fast）", k, v)
+				}
+				pc.StageTiers[k] = s
+			}
+		}
 	}
 	if o := asMap(getAny(raw, "output")); o != nil {
 		oc := &cfg.Output
@@ -370,8 +432,8 @@ func FromDict(raw map[string]any) (*Config, error) {
 	return cfg, nil
 }
 
-// Load 对应 Config.load：读 YAML → FromDict；空文件/纯注释 → 全默认。
-// 文件不存在或 YAML 语法错误时原样上抛。
+// Load 读配置（YAML 或 JSON——JSON 为 YAML 子集，同一解析器兼容）→ FromDict；
+// 空文件/纯注释 → 全默认。文件不存在或语法错误时原样上抛。
 func Load(path string) (*Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -386,9 +448,38 @@ func Load(path string) (*Config, error) {
 	}
 	m, ok := raw.(map[string]any)
 	if !ok {
-		return nil, fmt.Errorf("config.yaml 顶层必须是对象")
+		return nil, fmt.Errorf("配置文件顶层必须是对象")
 	}
 	return FromDict(m)
+}
+
+// ResolveDefaultPath 无显式 -c 时的配置解析链：
+// exe 同目录 config.json → exe 同目录 config.yaml → CWD config.yaml（旧行为兜底）。
+func ResolveDefaultPath() string {
+	exe, err := os.Executable()
+	if err == nil {
+		dir := filepath.Dir(exe)
+		for _, name := range []string{"config.json", "config.yaml"} {
+			p := filepath.Join(dir, name)
+			if st, err := os.Stat(p); err == nil && !st.IsDir() {
+				return p
+			}
+		}
+	}
+	return "config.yaml"
+}
+
+// DefaultConfigJSON 默认配置的 JSON 形态（由默认 YAML 转换，保证内容一致）。
+func DefaultConfigJSON() string {
+	var v any
+	if err := yaml.Unmarshal([]byte(defaultConfigYAML), &v); err != nil || v == nil {
+		return "{}"
+	}
+	b, err := json.MarshalIndent(v, "", "  ")
+	if err != nil {
+		return "{}"
+	}
+	return string(b) + "\n"
 }
 
 // CreateDefaultFile 对应 Config.create_default_file：独占模式原子创建默认配置；
@@ -407,7 +498,11 @@ func CreateDefaultFile(path string) (bool, error) {
 		return false, err
 	}
 	defer f.Close()
-	if _, err := f.WriteString(defaultConfigYAML); err != nil {
+	content := defaultConfigYAML
+	if strings.EqualFold(filepath.Ext(path), ".json") {
+		content = DefaultConfigJSON()
+	}
+	if _, err := f.WriteString(content); err != nil {
 		return false, err
 	}
 	return true, nil

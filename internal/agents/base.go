@@ -35,6 +35,8 @@ func (a *Agent) AskJSONDefault(system, user, tier, key string, maxTokens *int, d
 }
 
 func (a *Agent) askJSON(system, user, tier, key string, maxTokens *int, hasDefault bool, def any) (any, error) {
+	// pipeline.stage_tiers 环节档位覆盖（未配置时返回原档位）
+	tier = a.Config.Pipeline.TierFor(a.StageName, tier)
 	messages := []llm.Message{
 		{Role: "system", Content: system},
 		{Role: "user", Content: user},
@@ -68,6 +70,7 @@ func (a *Agent) askJSON(system, user, tier, key string, maxTokens *int, hasDefau
 
 // AskText 对应 _ask_text：异常回退 default（默认 ""），返回 strip 后文本。
 func (a *Agent) AskText(system, user, tier string, maxTokens *int, def string) string {
+	tier = a.Config.Pipeline.TierFor(a.StageName, tier)
 	messages := []llm.Message{
 		{Role: "system", Content: system},
 		{Role: "user", Content: user},

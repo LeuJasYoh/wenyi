@@ -359,6 +359,7 @@ type CompatClient[O any] struct {
 	cfg            *config.LLMConfig
 	ProviderName   string
 	BaseURL        string
+	APIKey         string // 配置直存密钥（llm.api_key；优先于环境变量）
 	APIKeyEnv      string
 	Tiers          map[string]llm.ResolvedTier[O]
 	RequiresAPIKey bool
@@ -383,6 +384,9 @@ func InitCompatClient[O any](c *CompatClient[O], cfg *config.LLMConfig,
 	if c.BaseURL == "" && defaultBaseURL != "" {
 		c.BaseURL = defaultBaseURL
 	}
+	if cfg.APIKey != nil {
+		c.APIKey = strings.TrimSpace(*cfg.APIKey)
+	}
 	c.APIKeyEnv = ""
 	if cfg.APIKeyEnv != nil {
 		c.APIKeyEnv = *cfg.APIKeyEnv
@@ -399,17 +403,20 @@ func InitCompatClient[O any](c *CompatClient[O], cfg *config.LLMConfig,
 	return nil
 }
 
-// ValidateCredentials 按 requires_api_key 检查环境变量（主规格 §5.7）。
+// ValidateCredentials 凭据校验（主规格 §5.7）：llm.api_key 直存优先，其次环境变量。
 func (c *CompatClient[O]) ValidateCredentials() error {
+	if c.APIKey != "" {
+		return nil
+	}
 	if c.APIKeyEnv == "" {
 		if c.RequiresAPIKey {
-			return fmt.Errorf("%s provider 需要配置 llm.api_key_env", c.ProviderName)
+			return fmt.Errorf("%s provider 需要配置 llm.api_key 或 llm.api_key_env", c.ProviderName)
 		}
 		return nil
 	}
 	key := strings.TrimSpace(os.Getenv(c.APIKeyEnv))
 	if key == "" {
-		return fmt.Errorf("未设置环境变量 %s（%s API key）", c.APIKeyEnv, c.ProviderName)
+		return fmt.Errorf("未设置环境变量 %s（%s API key），或在设置页填写 API Key", c.APIKeyEnv, c.ProviderName)
 	}
 	return nil
 }
@@ -430,8 +437,8 @@ func (c *CompatClient[O]) ensureCaller() (ChatCaller, error) {
 	if err := c.ValidateCredentials(); err != nil {
 		return nil, err
 	}
-	apiKey := ""
-	if c.APIKeyEnv != "" {
+	apiKey := c.APIKey
+	if apiKey == "" && c.APIKeyEnv != "" {
 		apiKey = os.Getenv(c.APIKeyEnv)
 	}
 	if apiKey == "" {

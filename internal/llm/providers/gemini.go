@@ -254,12 +254,15 @@ func NewGeminiClient(cfg *config.LLMConfig) (*GeminiClient, error) {
 }
 
 func (g *GeminiClient) ValidateCredentials() error {
+	if g.cfg.APIKey != nil && strings.TrimSpace(*g.cfg.APIKey) != "" {
+		return nil // llm.api_key 直存优先
+	}
 	key, targetEnv := GetAPIKeyFromEnv("")
 	if g.cfg.APIKeyEnv != nil && *g.cfg.APIKeyEnv != "" {
 		key, targetEnv = GetAPIKeyFromEnv(*g.cfg.APIKeyEnv)
 	}
 	if key == "" {
-		return fmt.Errorf("未设置环境变量 %s（或 %s）", targetEnv, GeminiFallbackAPIKeyEnv)
+		return fmt.Errorf("未设置环境变量 %s（或 %s），或在设置页填写 API Key", targetEnv, GeminiFallbackAPIKeyEnv)
 	}
 	return nil
 }
@@ -284,7 +287,13 @@ func (g *GeminiClient) EnsureCaller() (GeminiCaller, error) {
 	if g.cfg.APIKeyEnv != nil {
 		customEnv = *g.cfg.APIKeyEnv
 	}
-	key, _ := GetAPIKeyFromEnv(customEnv)
+	key := ""
+	if g.cfg.APIKey != nil {
+		key = strings.TrimSpace(*g.cfg.APIKey)
+	}
+	if key == "" {
+		key, _ = GetAPIKeyFromEnv(customEnv)
+	}
 	baseURL := "https://generativelanguage.googleapis.com"
 	if g.cfg.BaseURL != nil && *g.cfg.BaseURL != "" {
 		baseURL = strings.TrimRight(*g.cfg.BaseURL, "/")

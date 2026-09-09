@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><title>Wenyi · 前端未构建</title>
+<style>body{font-family:system-ui,"Microsoft YaHei",sans-serif;background:#f4f0e6;color:#453f35;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}div{max-width:32rem;padding:2rem;border:1px solid #dbd2bc;background:#fbf9f4}code{background:#eae4d4;padding:0 3px}</style>
+</head><body><div>
+<h1 style="margin:0 0 .5em">Wenyi 前端尚未构建</h1>
+<p>当前可执行文件内没有打包 WebUI 产物。请在仓库根目录运行：</p>
+<p><code>make webui</code></p>
+<p>该命令会构建 <code>node/ui</code> 并把产物复制到 <code>internal/webserver/static/</code>，随后重新 <code>go build</code>。</p>
+<p>开发调试也可以直接指定磁盘目录：<code>set WENYI_UI_DIR=node/ui-dist</code>。</p>
+</div></body></html>

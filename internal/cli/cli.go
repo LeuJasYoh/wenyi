@@ -17,7 +17,7 @@ import (
 )
 
 // Version 对应 package_version("trans-novel")。
-const Version = "0.4.1"
+const Version = "0.5.0"
 
 // progressLine 由 --progress-line 设置（cli 包内共享）。
 var progressLine bool
@@ -30,27 +30,34 @@ func ProgressEnabled() bool { return progressLine }
 
 // APIPreflightExempt 免凭据校验的命令（纯本地）。
 var apiPreflightExempt = map[string]bool{
-	"assemble": true, "glossary": true, "report": true, "status": true,
+	"assemble": true, "glossary": true, "report": true, "status": true, "web": true,
 }
 
 // Run 执行 CLI（args 不含程序名）；返回退出码。out/err 用于输出（测试注入）。
 func Run(args []string, out, errOut io.Writer) int {
-	cfgPath := "config.yaml"
+	cfgPath := config.ResolveDefaultPath()
 	// 分派前解析 --config/-c（含 = 与粘连形式）
 	if p := configPathFromArgs(args); p != "" {
 		cfgPath = p
 	}
-	created, err := config.CreateDefaultFile(cfgPath)
-	if err != nil {
-		fmt.Fprintf(errOut, "错误：%v\n", err)
-		return 1
+	// web 子命令：默认配置的选址/创建交给 webserver（exe 同目录 config.json 优先），不在 CWD 落文件
+	if !(len(args) > 0 && args[0] == "web" && configPathFromArgs(args) == "") {
+		created, err := config.CreateDefaultFile(cfgPath)
+		if err != nil {
+			fmt.Fprintf(errOut, "错误：%v\n", err)
+			return 1
+		}
+		_ = created
 	}
-	_ = created
 
 	cfg, err := config.Load(cfgPath)
 	if err != nil {
-		fmt.Fprintf(errOut, "错误：%v\n", err)
-		return 1
+		// web（无显式 -c）允许无配置启动：webserver 会生成 exe 同目录 config.json
+		if !(len(args) > 0 && args[0] == "web" && configPathFromArgs(args) == "") {
+			fmt.Fprintf(errOut, "错误：%v\n", err)
+			return 1
+		}
+		cfg = config.DefaultConfig()
 	}
 
 	root := &cobra.Command{
@@ -84,6 +91,7 @@ func Run(args []string, out, errOut io.Writer) int {
 	registerReport(root, cfg, out, errOut)
 	registerAssemble(root, cfg, out, errOut)
 	registerGlossary(root, cfg, out, errOut)
+	registerWeb(root, out, errOut)
 
 	root.SetArgs(args)
 	if hasHelpFlag(args) {

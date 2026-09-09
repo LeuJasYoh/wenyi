@@ -64,7 +64,7 @@ func (r *Reviewer) ReviewResult(sources, targets []string, glossaryTerms []agent
 	if trace != nil {
 		trace("request", map[string]any{"messages": messagesToRows(messages)})
 	}
-	text, err := r.Client.Complete(messages, "cheap", true, nil, r.StageName)
+	text, err := r.Client.Complete(messages, r.Config.Pipeline.TierFor("Reviewer", "cheap"), true, nil, r.StageName)
 	if err != nil {
 		if trace != nil {
 			trace("error", map[string]any{"error_type": errorTypeName(err), "error": err.Error()})

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Wenyi.Pdf")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+716b1bf00f3e601c78549c68371a7a421fe768ab")]
 [assembly: System.Reflection.AssemblyProductAttribute("Wenyi.Pdf")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Wenyi.Pdf")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
