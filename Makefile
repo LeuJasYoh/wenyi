@@ -1,4 +1,4 @@
-# wenyi-multi 三组件构建/测试（对齐任务书 §5 与架构分册 §5）
+# wenyi 三组件构建/测试（对齐任务书 §5 与架构分册 §5）
 WORKSPACE := $(CURDIR)
 SPEC := D:/Projects/wenyi-spec-export
 

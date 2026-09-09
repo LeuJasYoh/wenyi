@@ -1,4 +1,4 @@
-# wenyi-multi 开发日志（跨会话进度档案）
+# wenyi 开发日志（跨会话进度档案）
 
 > 本文件是跨上下文压缩的持久进度档案。每个阶段完成/中断时更新。
 > 规格 materials: D:\Projects\wenyi-spec-export\（主规格=唯一真源；冲突裁决顺序：主规格 > 分册 > 经验；验收方法以任务书 §7 为最高优先）
@@ -6,7 +6,7 @@
 ## 环境
 
 - Go 1.26.5 / Node v24.14.0 (npm 11.9.0) / .NET 10.0.400 @ Windows
-- 工作区：D:\Projects\wenyi-multi（Go module 名 `wenyi`）
+- 工作区：D:\Projects\wenyi-multi（Go module 名 `wenyi`；GitHub: LeuJasYoh/wenyi，文档项目名统一为 wenyi）
 - Go deps 已取：cobra、modernc.org/sqlite、golang.org/x/text、golang.org/x/sync、（待加 gopkg.in/yaml.v3）
 
 ## 关键实现决策（累积）
@@ -78,9 +78,9 @@
 - 测试：web-api.test.js 14 例（映射表逐行/slug·Host/游标/错误信封/分页/上传闭环）+ web-e2e.test.js 3 例（全流程闭环含 review/取消幂等/事件透传）全绿
 - 关键坑：① spawn 不传 env → fake 无路由（engineEnv 注入修复）；② cobra PersistentPreRun 时机（--state-dir 在 flags 解析后才可用）；③ glossary aliases NULL 容错（safeParseList）；④ Go sqlite 驱动需在 main 侧 import
 
-## 最终测试汇总（288 例全绿）
-- Go 189（config/llm/providers/factory/glossary/agents/review/pipeline/punct/cli）
-- Node 95（ingest 48 + assemble 15 + pdf 4 + runall 3 + web 17 + 冒烟 8）
+## 最终测试汇总（294 例全绿，方案二后口径）
+- Go 212（config/llm/providers/factory/glossary/agents/review/pipeline/punct/cli + webserver 19 + 配置新字段 4）
+- Node 78（ingest 48 + assemble 15 + pdf 4 + runall 3 + 冒烟 8；原 web 17 已移植为 Go webserver 测试）
 - .NET 4（QuestPDF 渲染冒烟）
 
 ### WebUI 视觉重设计（完成 ✅ 2026-09-09，书卷纸感设计系统）

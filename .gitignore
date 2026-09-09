@@ -12,6 +12,9 @@ webui-run/
 *.log
 nonexistent-config-test.yaml
 
+# 引擎运行时在 node/ 目录生成的默认配置（仓库根 config.yaml 为交付基线）
+node/config.yaml
+
 # IDE 与系统
 .idea/
 .vscode/
