@@ -3,6 +3,16 @@
 Wenyi（trans-novel）多语言复刻版：Go + Node.js + .NET 10 三组件 + **WebUI 产品主界面**。
 行为复刻自 Python 原版 v0.4.1（GitHub: BigDawnGhost/wenyi），验收方式为测试断言迁移（见《测试迁移对照表.md》）。
 
+## 界面预览
+
+书卷纸感设计系统：纸色做底、墨色为字、朱砂点睛；标题衬线、数据等宽，无网络字体依赖，离线可用。
+
+![书架首页](docs/screenshots/dashboard.png)
+
+| 书籍详情 · 翻译进度 | 设置 · 模型服务与档位 |
+|---|---|
+| ![书籍详情 · 翻译进度](docs/screenshots/book-translate.png) | ![设置](docs/screenshots/settings.png) |
+
 ## 运行时前置
 
 - **Go 1.26+**：编译引擎（静态单二进制，无运行时依赖；WebUI 后端同在引擎内）
